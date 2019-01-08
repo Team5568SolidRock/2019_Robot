@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
   //Create Joysticks
   Joystick m_joystick_left;
   Joystick m_joystick_right;
+  Joystick m_gamepad;
 
   // Create Drive Motors
   Talon m_left_front;
@@ -37,6 +38,7 @@ public class Robot extends TimedRobot {
     // Initialize Joysticks
     m_joystick_left = new Joystick(0);
     m_joystick_right = new Joystick(1);
+    m_gamepad = new Joystick(3);
 
     // Initialize Drive Motors
     m_left_front = new Talon(0);
