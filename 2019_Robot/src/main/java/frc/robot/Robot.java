@@ -20,6 +20,7 @@ public class Robot extends TimedRobot {
   Joystick m_gamepad;
 
   // Create Drive Motors
+
   Talon m_left_front;
   Talon m_right_front;
   Talon m_left_back;
@@ -48,6 +49,8 @@ public class Robot extends TimedRobot {
 
     // Initialize Drive Object
     m_drive = new DifferentialDrive(m_left_front, m_right_front);
+
+    // Configure Talons
 
   }
 
@@ -80,8 +83,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    m_drive.tankDrive(m_joystick_right.getY(), m_joystick_left.getY());
-
+    tank_Drive(m_joystick_right.getY(), m_joystick_left.getY(), m_left_front, m_right_front, m_left_back, m_right_back);
   }
 
   /**
@@ -89,5 +91,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+  }
+
+  private void tank_Drive(double x, double y, Talon motor_front_left, Talon motor_front_right, Talon motor_back_left, Talon motor_back_right)
+  {
+    
   }
 }
