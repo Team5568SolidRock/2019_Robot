@@ -52,9 +52,6 @@ public class Robot extends TimedRobot {
     m_right_front = new TalonSRX(1);
     m_left_back = new Talon(2);
     m_right_back = new Talon(3);
-
-    // Configure Talons
-
   }
 
   /**
