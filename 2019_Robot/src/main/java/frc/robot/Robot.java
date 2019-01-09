@@ -10,9 +10,13 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Talon;
+
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Robot extends TimedRobot {
+
+  //Constants
+  final double DEADZONE = .02;
 
   //Create Joysticks
   Joystick m_joystick_left;
@@ -82,7 +86,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-
     tank_Drive(m_joystick_right.getY(), m_joystick_left.getY(), m_left_front, m_right_front, m_left_back, m_right_back);
   }
 
@@ -93,8 +96,29 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void tank_Drive(double x, double y, Talon motor_front_left, Talon motor_front_right, Talon motor_back_left, Talon motor_back_right)
+  private void tank_Drive(double joystick_left_y, double joystick_right_y, Talon motor_front_left, Talon motor_front_right, Talon motor_back_left, Talon motor_back_right)
   {
-    
+    // Impliment Deadzone
+    if(joystick_left_y < DEADZONE)
+    {
+      joystick_left_y = 0;
+    }
+    if(joystick_right_y < DEADZONE)
+    {
+      joystick_right_y = 0;
+    }
+
+    // Square joystick values
+    double updated_left = (joystick_left_y * joystick_left_y) / 2;
+
+    double updated_right = (joystick_right_y * joystick_right_y) / 2;
+
+    // Set left values
+    motor_front_left.set(updated_left);
+    motor_back_left.set(updated_left);
+
+    // Set right values
+    motor_front_right.set(updated_right);
+    motor_front_left.set(updated_right);
   }
 }
