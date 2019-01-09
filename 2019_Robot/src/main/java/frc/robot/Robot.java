@@ -10,8 +10,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Talon;
-
 import edu.wpi.first.wpilibj.Joystick;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class Robot extends TimedRobot {
 
@@ -25,8 +27,8 @@ public class Robot extends TimedRobot {
 
   // Create Drive Motors
 
-  Talon m_left_front;
-  Talon m_right_front;
+  TalonSRX m_left_front;
+  TalonSRX m_right_front;
   Talon m_left_back;
   Talon m_right_back;
 
@@ -46,13 +48,10 @@ public class Robot extends TimedRobot {
     m_gamepad = new Joystick(3);
 
     // Initialize Drive Motors
-    m_left_front = new Talon(0);
-    m_right_front = new Talon(1);
+    m_left_front = new TalonSRX(0);
+    m_right_front = new TalonSRX(1);
     m_left_back = new Talon(2);
     m_right_back = new Talon(3);
-
-    // Initialize Drive Object
-    m_drive = new DifferentialDrive(m_left_front, m_right_front);
 
     // Configure Talons
 
@@ -96,7 +95,7 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void tank_Drive(double joystick_left_y, double joystick_right_y, Talon motor_front_left, Talon motor_front_right, Talon motor_back_left, Talon motor_back_right)
+  private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_front_left, TalonSRX motor_front_right, Talon motor_back_left, Talon motor_back_right)
   {
     // Impliment Deadzone
     if(joystick_left_y < DEADZONE)
@@ -114,11 +113,11 @@ public class Robot extends TimedRobot {
     double updated_right = (joystick_right_y * joystick_right_y) / 2;
 
     // Set left values
-    motor_front_left.set(updated_left);
+    motor_front_left.set(ControlMode.PercentOutput, updated_left);
     motor_back_left.set(updated_left);
 
     // Set right values
-    motor_front_right.set(updated_right);
-    motor_front_left.set(updated_right);
+    motor_front_right.set(ControlMode.PercentOutput, updated_right);
+    motor_back_right.set(updated_right);
   }
 }
