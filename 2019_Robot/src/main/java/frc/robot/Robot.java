@@ -15,6 +15,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+import edu.wpi.first.cameraserver.CameraServer;
+
 public class Robot extends TimedRobot {
 
   //Constants
@@ -56,6 +58,9 @@ public class Robot extends TimedRobot {
     // Configure Victors
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
+
+    //Initialize CameraServer
+    CameraServer.getInstance().startAutomaticCapture();
   }
 
   /**
