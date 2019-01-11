@@ -109,26 +109,18 @@ public class Robot extends TimedRobot {
     }
 
     //Get signs
-    double left_sign = 1;
-    if (joystick_left_y < 0)
-    {
-      left_sign = -1;
-    }
-    double right_sign = 1;
-    if (joystick_right_y < 0)
-    {
-      right_sign = -1;
-    }
-    // Square joystick values
-    double updated_left = -(joystick_left_y * joystick_left_y * left_sign) / 2;
+    double left_sign = (joystick_left_y < 0) ? 1 : -1;
+    double right_sign = (joystick_right_y < 0) ? 1 : -1;
 
-    double updated_right = -(joystick_right_y * joystick_right_y * right_sign) / 2;
+    // Square joystick values
+    double updated_left = (joystick_left_y * joystick_left_y * left_sign) / 2;
+
+    double updated_right = (joystick_right_y * joystick_right_y * right_sign) / 2;
 
     // Set left values
-    //motor_left.set(ControlMode.PercentOutput, updated_left);
     motor_left.set(ControlMode.PercentOutput, updated_left);
+    
     // Set right values
-    //motor_right.set(ControlMode.PercentOutput, updated_right);
     motor_right.set(ControlMode.PercentOutput, updated_right);
   }
 }
