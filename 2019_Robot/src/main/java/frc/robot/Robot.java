@@ -125,9 +125,9 @@ public class Robot extends TimedRobot {
       right_sign = -1;
     }
     // Square joystick values
-    double updated_left = -(joystick_left_y * joystick_left_y * left_sign) * 1.0;
+    double updated_left = -(joystick_left_y * joystick_left_y * left_sign);
 
-    double updated_right = -(joystick_right_y * joystick_right_y * right_sign) * 1.0;
+    double updated_right = (joystick_right_y * joystick_right_y * right_sign);
 
     // Set left values
     //motor_left.set(ControlMode.PercentOutput, updated_left);
