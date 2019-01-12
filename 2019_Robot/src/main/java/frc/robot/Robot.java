@@ -10,12 +10,12 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.Solenoid;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-
-import edu.wpi.first.cameraserver.CameraServer;
 
 public class Robot extends TimedRobot {
 
@@ -28,14 +28,14 @@ public class Robot extends TimedRobot {
   Joystick m_gamepad;
 
   // Create Drive Motors
-
   TalonSRX m_left_front;
   TalonSRX m_right_front;
   VictorSPX m_left_back;
   VictorSPX m_right_back;
 
-  // Initialize Drive Motors
-  DifferentialDrive m_drive;
+  // Create Solenoids
+  Solenoid m_solenoid_1;
+  Solenoid m_solenoid_2;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -54,6 +54,10 @@ public class Robot extends TimedRobot {
     m_right_front = new TalonSRX(1);
     m_left_back = new VictorSPX(3);
     m_right_back = new VictorSPX(4);
+
+    // Initialize Solenoids
+    m_solenoid_1 = new Solenoid(0);
+    m_solenoid_2 = new Solenoid(1);
 
     // Configure Victors
     m_left_back.follow(m_left_front);
@@ -92,6 +96,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    kicker(m_solenoid_1, m_solenoid_2, m_joystick_right.getRawButton(1));
   }
 
   /**
@@ -127,5 +132,11 @@ public class Robot extends TimedRobot {
     
     // Set right values
     motor_right.set(ControlMode.PercentOutput, updated_right);
+  }
+
+  private void kicker(Solenoid solenoid_1, Solenoid solenoid_2, Boolean button)
+  {
+    solenoid_1.set(button);
+    solenoid_2.set(button);
   }
 }
