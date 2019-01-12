@@ -9,6 +9,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -33,10 +34,13 @@ public class Robot extends TimedRobot {
   VictorSPX m_left_back;
   VictorSPX m_right_back;
 
-  // Create Solenoids
+  // Create Compressor and Solenoids
   Compressor m_compressor;
   Solenoid m_solenoid_1;
   Solenoid m_solenoid_2;
+
+  // Create Camera
+  UsbCamera m_camera;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -56,7 +60,7 @@ public class Robot extends TimedRobot {
     m_left_back = new VictorSPX(3);
     m_right_back = new VictorSPX(4);
 
-    // Initialize Solenoids
+    // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
     m_solenoid_1 = new Solenoid(0);
     m_solenoid_2 = new Solenoid(1);
@@ -66,6 +70,7 @@ public class Robot extends TimedRobot {
     m_right_back.follow(m_right_front);
 
     //Initialize CameraServer
+    CameraServer.getInstance().startAutomaticCapture();
     CameraServer.getInstance().startAutomaticCapture();
   }
 
