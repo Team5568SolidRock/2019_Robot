@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -33,6 +34,7 @@ public class Robot extends TimedRobot {
   VictorSPX m_right_back;
 
   // Create Solenoids
+  Compressor m_compressor;
   Solenoid m_solenoid_1;
   Solenoid m_solenoid_2;
 
@@ -55,6 +57,7 @@ public class Robot extends TimedRobot {
     m_right_back = new VictorSPX(4);
 
     // Initialize Solenoids
+    m_compressor = new Compressor();
     m_solenoid_1 = new Solenoid(0);
     m_solenoid_2 = new Solenoid(1);
 
@@ -122,9 +125,9 @@ public class Robot extends TimedRobot {
     double right_sign = (joystick_right_y < 0) ? 1 : -1;
 
     // Square joystick values
-    double updated_left = -(joystick_left_y * joystick_left_y * left_sign);
+    double updated_left = (joystick_left_y * joystick_left_y * left_sign);
 
-    double updated_right = (joystick_right_y * joystick_right_y * right_sign);
+    double updated_right = -(joystick_right_y * joystick_right_y * right_sign);
 
     // Set left values
     motor_left.set(ControlMode.PercentOutput, updated_left);
@@ -136,6 +139,6 @@ public class Robot extends TimedRobot {
   private void kicker(Solenoid solenoid_1, Solenoid solenoid_2, Boolean button)
   {
     solenoid_1.set(button);
-    solenoid_2.set(button);
+    //solenoid_2.set(button);
   }
 }
