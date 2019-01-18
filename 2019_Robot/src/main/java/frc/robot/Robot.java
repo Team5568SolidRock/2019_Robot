@@ -11,17 +11,19 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 public class Robot extends TimedRobot {
-
-  //Constants
-  final double DEADZONE = .02;
 
   //Create Joysticks
   Joystick m_joystick_left;
@@ -34,6 +36,10 @@ public class Robot extends TimedRobot {
   VictorSPX m_left_back;
   VictorSPX m_right_back;
 
+  // Create Encoders
+  Encoder m_left;
+  Encoder m_right;
+
   // Create Compressor and Solenoids
   Compressor m_compressor;
   Solenoid m_solenoid_1;
@@ -41,6 +47,13 @@ public class Robot extends TimedRobot {
 
   // Create Camera
   UsbCamera m_camera;
+
+  // Create Configurable Values
+  NetworkTableEntry m_deadzone;
+
+  // Create Shuffleboard Objects
+  ShuffleboardTab m_drive_base_tab;
+  ShuffleboardLayout m_encoders_layout;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -60,6 +73,10 @@ public class Robot extends TimedRobot {
     m_left_back = new VictorSPX(3);
     m_right_back = new VictorSPX(4);
 
+    // Initialize Encoders
+    m_left = new Encoder(1, 2, false);
+    //m_right = new Encoder(3, 4, true);
+
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
     m_solenoid_1 = new Solenoid(0);
@@ -69,9 +86,16 @@ public class Robot extends TimedRobot {
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
 
-    //Initialize CameraServer
+    // Initialize CameraServer
     CameraServer.getInstance().startAutomaticCapture();
     CameraServer.getInstance().startAutomaticCapture();
+
+    // Initialize Shuffleboard
+    m_deadzone = Shuffleboard.getTab("Configuration").add("Joystick Deadzone", .02).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
+    m_drive_base_tab = Shuffleboard.getTab("Drivebase");
+    m_encoders_layout = m_drive_base_tab.getLayout("List Layout", "Encoders").withPosition(0, 0).withSize(2, 2);
+    m_encoders_layout.add("Left Encoder", m_left);
+    //m_encoders_layout.add("Right Encoder", m_right);
   }
 
   /**
@@ -116,11 +140,11 @@ public class Robot extends TimedRobot {
   private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_left, TalonSRX motor_right)
   {
     // Impliment Deadzone
-    if(joystick_left_y < DEADZONE && joystick_left_y > -DEADZONE)
+    if(joystick_left_y < m_deadzone.getDouble(.02) && joystick_left_y > -m_deadzone.getDouble(.02))
     {
       joystick_left_y = 0;
     }
-    if(joystick_right_y < DEADZONE && joystick_right_y > -DEADZONE)
+    if(joystick_right_y < m_deadzone.getDouble(.02) && joystick_right_y > -m_deadzone.getDouble(.02))
     {
       joystick_right_y = 0;
     }
