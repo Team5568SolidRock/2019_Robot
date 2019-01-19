@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.SerialPort;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -55,6 +56,8 @@ public class Robot extends TimedRobot {
   ShuffleboardTab m_drive_base_tab;
   ShuffleboardLayout m_encoders_layout;
 
+  // Create SerialPort connection
+  SerialPort m_arduino;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -83,6 +86,7 @@ public class Robot extends TimedRobot {
     m_solenoid_2 = new Solenoid(1);
 
     // Configure Victors
+    //m_right_front.setInverted(true);
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
 
@@ -96,6 +100,9 @@ public class Robot extends TimedRobot {
     m_encoders_layout = m_drive_base_tab.getLayout("List Layout", "Encoders").withPosition(0, 0).withSize(2, 2);
     m_encoders_layout.add("Left Encoder", m_left);
     //m_encoders_layout.add("Right Encoder", m_right);
+
+    // Initialize SerialPort
+    m_arduino = new SerialPort(9600, SerialPort.Port.kUSB);
   }
 
   /**
@@ -126,7 +133,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    if(!m_joystick_left.getRawButton(1)){
+      tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    }
+    else {
+      ArduinDrive();
+    }
     kicker(m_solenoid_1, m_solenoid_2, m_joystick_right.getRawButton(1));
   }
 
@@ -149,14 +161,10 @@ public class Robot extends TimedRobot {
       joystick_right_y = 0;
     }
 
-    //Get signs
-    double left_sign = (joystick_left_y < 0) ? 1 : -1;
-    double right_sign = (joystick_right_y < 0) ? 1 : -1;
-
     // Square joystick values
-    double updated_left = (joystick_left_y * joystick_left_y * left_sign);
+    double updated_left = joystick_left_y * Math.abs(joystick_left_y);
 
-    double updated_right = -(joystick_right_y * joystick_right_y * right_sign);
+    double updated_right = -joystick_right_y * Math.abs(joystick_right_y);
 
     // Set left values
     motor_left.set(ControlMode.PercentOutput, updated_left);
@@ -169,5 +177,16 @@ public class Robot extends TimedRobot {
   {
     solenoid_1.set(button);
     //solenoid_2.set(button);
+  }
+
+  private void ArduinDrive()
+  {
+    //String drive_string = m_arduino.readString();
+    String drive_string = "11";
+    int left = drive_string.charAt(0);
+    int right = drive_string.charAt(1);
+
+    m_left_front.set(ControlMode.PercentOutput, left/16);
+    m_right_front.set(ControlMode.PercentOutput, -right/16);
   }
 }
