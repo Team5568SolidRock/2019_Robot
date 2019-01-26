@@ -209,25 +209,30 @@ public class Robot extends TimedRobot {
 
   private void ArduinDrive()
   {
-    // String drive_string = new String(m_arduino.read(12));
-    
-    // System.out.println("Total" + drive_string);
+    int drive_string = Integer.parseInt(read());
+    System.out.println(drive_string);
 
-    // double left = drive_string.charAt(1);
-    // double right = drive_string.charAt(2);
-
-    // System.out.println("Left:" + left);
-    // System.out.println("Right:" + right);
-
-    // m_left_front.set(ControlMode.PercentOutput, m_joystick_left.getRawAxis(1));
-    // m_right_front.set(ControlMode.PercentOutput, m_joystick_right.getRawAxis(1));
-
-    // drive_left = left;
-    // drive_right = right;
-
-    // System.out.println("TEST");
-
-    System.out.println(read());
+    double left;
+    double right;
+    if(drive_string > 0)
+    {
+      left = 1;
+      right = .5;
+    }
+    else if(drive_string < 0)
+    {
+      left = .5;
+      right = 1;
+    }
+    else
+    {
+      left = .5;
+      right = .5;
+    }
+    System.out.println("Left:" + left);
+    System.out.println("Right:" + right);
+    m_left_front.set(ControlMode.PercentOutput, m_joystick_left.getRawAxis(1));
+    m_right_front.set(ControlMode.PercentOutput, m_joystick_right.getRawAxis(1));
   }
 
   public void write(String input){//writes to the arduino 
