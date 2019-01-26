@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Talon;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -26,11 +27,14 @@ public class Robot extends TimedRobot {
   Joystick m_gamepad;
 
   // Create Drive Motors
-
   TalonSRX m_left_front;
   TalonSRX m_right_front;
   VictorSPX m_left_back;
   VictorSPX m_right_back;
+
+  // Create Climb
+  Talon m_climb_front;
+  Talon m_climb_back;
 
   // Initialize Drive Motors
   DifferentialDrive m_drive;
@@ -48,11 +52,15 @@ public class Robot extends TimedRobot {
     m_gamepad = new Joystick(3);
 
     // Initialize Drive Motors
-    m_left_front = new TalonSRX(2);
-    m_right_front = new TalonSRX(1);
-    m_left_back = new VictorSPX(3);
-    m_right_back = new VictorSPX(4);
+    m_left_front = new TalonSRX(7);
+    m_right_front = new TalonSRX(9);
+    m_left_back = new VictorSPX(6);
+    m_right_back = new VictorSPX(8);
 
+    // Initialize Climb Motors
+    m_climb_front = new Talon(0);
+    m_climb_back = new Talon(1);
+    
     // Configure Victors
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
