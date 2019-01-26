@@ -19,12 +19,21 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.I2C.Port;
+
+import java.io.DataOutputStream;
+import java.util.Base64;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 public class Robot extends TimedRobot {
+  //Create and Initialize I2C Ports & MAX_BYTES
+  private static I2C Wire = new I2C(Port.kOnboard, 4);
+	private static final int MAX_BYTES = 32;
 
   //Create Joysticks
   Joystick m_joystick_left;
@@ -58,6 +67,14 @@ public class Robot extends TimedRobot {
 
   // Create SerialPort connection
   SerialPort m_arduino;
+
+  // Create digital input
+  DigitalInput ArduinoLeft;
+  DigitalInput ArduinoRight;
+
+  Double drive_left;
+  Double drive_right;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -103,6 +120,10 @@ public class Robot extends TimedRobot {
 
     // Initialize SerialPort
     m_arduino = new SerialPort(9600, SerialPort.Port.kUSB);
+
+    // Initialize DigitalInput
+    //ArduinoLeft = new DigitalInput(0);
+    //ArduinoRight = new DigitalInput(1);
   }
 
   /**
@@ -119,6 +140,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    while(true)
+    {
+      if(m_joystick_left.getRawButton(1))
+      {
+        ArduinDrive();
+      }
+    }
   }
 
   /**
@@ -162,9 +190,9 @@ public class Robot extends TimedRobot {
     }
 
     // Square joystick values
-    double updated_left = joystick_left_y * Math.abs(joystick_left_y);
+    double updated_left = -joystick_left_y * Math.abs(joystick_left_y);
 
-    double updated_right = -joystick_right_y * Math.abs(joystick_right_y);
+    double updated_right = joystick_right_y * Math.abs(joystick_right_y);
 
     // Set left values
     motor_left.set(ControlMode.PercentOutput, updated_left);
@@ -181,12 +209,41 @@ public class Robot extends TimedRobot {
 
   private void ArduinDrive()
   {
-    //String drive_string = m_arduino.readString();
-    String drive_string = "11";
-    int left = drive_string.charAt(0);
-    int right = drive_string.charAt(1);
+    // String drive_string = new String(m_arduino.read(12));
+    
+    // System.out.println("Total" + drive_string);
 
-    m_left_front.set(ControlMode.PercentOutput, left/16);
-    m_right_front.set(ControlMode.PercentOutput, -right/16);
+    // double left = drive_string.charAt(1);
+    // double right = drive_string.charAt(2);
+
+    // System.out.println("Left:" + left);
+    // System.out.println("Right:" + right);
+
+    // m_left_front.set(ControlMode.PercentOutput, m_joystick_left.getRawAxis(1));
+    // m_right_front.set(ControlMode.PercentOutput, m_joystick_right.getRawAxis(1));
+
+    // drive_left = left;
+    // drive_right = right;
+
+    // System.out.println("TEST");
+
+    System.out.println(read());
   }
+
+  public void write(String input){//writes to the arduino 
+    char[] CharArray = input.toCharArray();//creates a char array from the input string
+    byte[] WriteData = new byte[CharArray.length];//creates a byte array from the char array
+    for (int i = 0; i < CharArray.length; i++) {//writes each byte to the arduino
+      WriteData[i] = (byte) CharArray[i];//adds the char elements to the byte array 
+    }
+    Wire.transaction(WriteData, WriteData.length, null, 0);//sends each byte to arduino
+  }
+
+  private String read(){//function to read the data from arduino
+		byte[] data = new byte[MAX_BYTES];//create a byte array to hold the incoming data
+		Wire.read(4, MAX_BYTES, data);//use address 4 on i2c and store it in data
+		String output = new String(data);//create a string from the byte array
+		int pt = output.indexOf((char)255);
+		return (String) output.subSequence(0, pt < 0 ? 0 : pt);
+	}
 }
