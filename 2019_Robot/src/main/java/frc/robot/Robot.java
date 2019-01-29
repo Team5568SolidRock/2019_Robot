@@ -8,9 +8,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
+
+import javax.lang.model.util.ElementScanner6;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -35,9 +36,7 @@ public class Robot extends TimedRobot {
   // Create Climb
   Talon m_climb_front;
   Talon m_climb_back;
-
-  // Initialize Drive Motors
-  DifferentialDrive m_drive;
+  Talon m_climb_drive;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -58,8 +57,9 @@ public class Robot extends TimedRobot {
     m_right_back = new VictorSPX(8);
 
     // Initialize Climb Motors
-    m_climb_front = new Talon(0);
-    m_climb_back = new Talon(1);
+    m_climb_front = new Talon(2);
+    m_climb_back = new Talon(0);
+    m_climb_drive = new Talon(1);
     
     // Configure Victors
     m_left_back.follow(m_left_front);
@@ -95,6 +95,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    climb(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climb_back, m_climb_front, m_climb_drive);
   }
 
   /**
@@ -116,27 +117,72 @@ public class Robot extends TimedRobot {
       joystick_right_y = 0;
     }
 
-    //Get signs
-    double left_sign = 1;
-    if (joystick_left_y < 0)
-    {
-      left_sign = -1;
-    }
-    double right_sign = 1;
-    if (joystick_right_y < 0)
-    {
-      right_sign = -1;
-    }
     // Square joystick values
-    double updated_left = -(joystick_left_y * joystick_left_y * left_sign) / 2;
+    double updated_left = joystick_left_y * Math.abs(joystick_left_y);
 
-    double updated_right = -(joystick_right_y * joystick_right_y * right_sign) / 2;
+    double updated_right = joystick_right_y * Math.abs(joystick_right_y);
 
     // Set left values
-    //motor_left.set(ControlMode.PercentOutput, updated_left);
     motor_left.set(ControlMode.PercentOutput, updated_left);
+
     // Set right values
-    //motor_right.set(ControlMode.PercentOutput, updated_right);
     motor_right.set(ControlMode.PercentOutput, updated_right);
+  }
+
+  private void climb(double gamepad_left_y, double gamepad_right_y, double gamepad_left_trigger, double gamepad_right_trigger, boolean gamepad_button_a, Talon climb_back, Talon climb_front, Talon climb_drive)
+  {
+    // Impliment Deadzone
+    if(gamepad_left_y < DEADZONE && gamepad_left_y > -DEADZONE)
+    {
+      gamepad_left_y = 0;
+    }
+    if(gamepad_right_y < DEADZONE && gamepad_right_y > -DEADZONE)
+    {
+      gamepad_right_y = 0;
+    }
+    if(gamepad_left_trigger < DEADZONE && gamepad_left_trigger > -DEADZONE)
+    {
+      gamepad_left_trigger = 0;
+    }
+    if(gamepad_right_trigger < DEADZONE && gamepad_right_trigger > -DEADZONE)
+    {
+      gamepad_right_trigger = 0;
+    }
+
+    // Square joystick values
+    double updated_left = gamepad_left_y * Math.abs(gamepad_left_y);
+
+    double updated_right = gamepad_right_y * Math.abs(gamepad_right_y);
+
+    double updated_left_trigger = gamepad_left_trigger * Math.abs(gamepad_left_trigger);
+
+    double updated_right_trigger = gamepad_right_trigger * Math.abs(gamepad_right_trigger);
+
+
+    // Set front and back values
+    if(gamepad_button_a)
+    {
+      climb_front.set(updated_left);
+      climb_back.set(updated_left);
+    }
+    else
+    {
+      climb_front.set(updated_left);
+      climb_back.set(updated_right);
+    }
+
+    // Set drive values
+    if(updated_left_trigger > 0)
+    {
+      climb_drive.set(updated_left_trigger);
+    }
+    else if(updated_right_trigger > 0)
+    {
+      climb_drive.set(updated_right_trigger);
+    }
+    else
+    {
+      climb_drive.set(0);
+    }
   }
 }
