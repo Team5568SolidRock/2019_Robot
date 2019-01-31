@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.vision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +30,6 @@ public class Vision {
 	public Vision(){
 		// Open a pipeline to a Pixy camera.
 		pixy1 = new PixySPI(new SPI(port), packets, new PixyException(print));
-	}
-
-
-	public void initDefaultCommand() {
-		// Set the default command for a subsystem here.
-		// setDefaultCommand(new MySpecialCommand());
 	}
 
 	public void testPixy1(){

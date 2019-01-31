@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import frc.robot.vision.Vision;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -20,6 +22,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import java.lang.Thread;
+
 public class Robot extends TimedRobot {
   //Create and Initialize I2C Ports & MAX_BYTES
   private static I2C Wire = new I2C(Port.kOnboard, 4);
@@ -50,6 +53,8 @@ public class Robot extends TimedRobot {
   DigitalInput Arduino12 = new DigitalInput(0);
   DigitalInput Arduino13 = new DigitalInput(1);
 
+  Vision Other;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -72,16 +77,18 @@ public class Robot extends TimedRobot {
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
 
-    Thread Pixy = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        for(int x = 0; x < 10; x++)
-        {
-          ArduinDrive();
-        }
-      }
-    });
-    Pixy.start();
+    // Thread Pixy = new Thread(new Runnable() {
+    //   @Override
+    //   public void run() {
+    //     for(int x = 0; x < 10; x++)
+    //     {
+    //       ArduinDrive();
+    //     }
+    //   }
+    // });
+    // Pixy.start();
+
+    Other = new Vision();
   }
 
   /**
@@ -116,10 +123,7 @@ public class Robot extends TimedRobot {
       tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
     }
     else {
-      System.out.println("Left:" + drive_left);
-      System.out.println("Right:" + drive_right);
-      //m_left_front.set(ControlMode.PercentOutput, -drive_left);
-      //m_right_front.set(ControlMode.PercentOutput, drive_right);
+      Other.testPixy1();
     }
   }
 
@@ -153,7 +157,6 @@ public class Robot extends TimedRobot {
     try {
       Thread.sleep(100, 0);
     } catch (Exception sleepInterupteException) {
-      //TODO: handle exception
       System.out.println("sleepInterruptException");
     }
     System.out.println("Error:" + error);
@@ -162,7 +165,6 @@ public class Robot extends TimedRobot {
       try {
         int drive_string = Integer.parseInt(error);
       } catch (Exception parseIntException) {
-        //TODO: handle exception
         System.out.println("Parsing the int is what broke");
       }
       int drive_string = Integer.parseInt(error);

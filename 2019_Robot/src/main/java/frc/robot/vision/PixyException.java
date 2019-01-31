@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.vision;
 
 public class PixyException extends Exception{
     public PixyException(String message){
