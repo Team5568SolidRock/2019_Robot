@@ -8,8 +8,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
+
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -36,6 +41,8 @@ public class Robot extends TimedRobot {
   Talon m_climb_back;
   Talon m_climb_drive;
 
+  // Create Shuffleboard
+  NetworkTableEntry m_climb_speed;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -64,6 +71,9 @@ public class Robot extends TimedRobot {
     m_left_back.setInverted(true);
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
+
+    // Initialize Shuffleboard
+    m_climb_speed = Shuffleboard.getTab("Configuration").add("Front Climb", .9).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
   }
 
   /**
@@ -162,7 +172,7 @@ public class Robot extends TimedRobot {
     // Set front and back values
     if(gamepad_button_a)
     {
-      climb_front.set(updated_left * .9);
+      climb_front.set(updated_left * m_climb_speed.get
       climb_back.set(updated_left);
     }
     else
