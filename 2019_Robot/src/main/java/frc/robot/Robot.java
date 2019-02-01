@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
     m_right_back.follow(m_right_front);
 
     // Initialize Shuffleboard
-    m_climb_speed = Shuffleboard.getTab("Configuration").add("Front Climb", .9).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
+    m_climb_speed = Shuffleboard.getTab("Configuration").add("Front Climb", .9).withWidget("Text View").withPosition(1, 1).withSize(2, 1).getEntry();
   }
 
   /**
