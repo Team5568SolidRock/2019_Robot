@@ -11,8 +11,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 
-import javax.lang.model.util.ElementScanner6;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -48,7 +46,7 @@ public class Robot extends TimedRobot {
     // Initialize Joysticks
     m_joystick_left = new Joystick(0);
     m_joystick_right = new Joystick(1);
-    m_gamepad = new Joystick(3);
+    m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
     m_left_front = new TalonSRX(7);
@@ -62,6 +60,8 @@ public class Robot extends TimedRobot {
     m_climb_drive = new Talon(1);
     
     // Configure Victors
+    m_left_front.setInverted(true);
+    m_left_back.setInverted(true);
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
   }
@@ -162,7 +162,7 @@ public class Robot extends TimedRobot {
     // Set front and back values
     if(gamepad_button_a)
     {
-      climb_front.set(updated_left);
+      climb_front.set(updated_left * .9);
       climb_back.set(updated_left);
     }
     else
