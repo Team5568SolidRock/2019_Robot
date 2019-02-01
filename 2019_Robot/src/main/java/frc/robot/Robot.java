@@ -172,7 +172,7 @@ public class Robot extends TimedRobot {
     // Set front and back values
     if(gamepad_button_a)
     {
-      climb_front.set(updated_left * m_climb_speed.get
+      climb_front.set(updated_left * m_climb_speed.getDouble(.9));
       climb_back.set(updated_left);
     }
     else
