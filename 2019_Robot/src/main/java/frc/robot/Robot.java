@@ -13,9 +13,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.I2C.Port;
+//import edu.wpi.first.wpilibj.I2C.Port;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -25,7 +26,7 @@ import java.lang.Thread;
 
 public class Robot extends TimedRobot {
   //Create and Initialize I2C Ports & MAX_BYTES
-  private static I2C Wire = new I2C(Port.kOnboard, 4);
+  //private static I2C Wire = new I2C(Port.kOnboard, 4);
 	private static final int MAX_BYTES = 32;
 
   //Create Joysticks
@@ -73,20 +74,13 @@ public class Robot extends TimedRobot {
     m_left_back = new VictorSPX(3);
     m_right_back = new VictorSPX(4);
 
+    // Serial Port Initialize
+    m_arduino = new SerialPort(9600, Port.kUSB);
+    m_arduino.setReadBufferSize(1);
+
     // Configure Victors
     m_left_back.follow(m_left_front);
     m_right_back.follow(m_right_front);
-
-    // Thread Pixy = new Thread(new Runnable() {
-    //   @Override
-    //   public void run() {
-    //     for(int x = 0; x < 10; x++)
-    //     {
-    //       ArduinDrive();
-    //     }
-    //   }
-    // });
-    // Pixy.start();
 
     Other = new Vision();
   }
@@ -123,7 +117,8 @@ public class Robot extends TimedRobot {
       tank_Drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_left_front, m_right_front);
     }
     else {
-      Other.testPixy1();
+      //Other.testPixy1();
+      ArduinDrive();
     }
   }
 
@@ -151,64 +146,18 @@ public class Robot extends TimedRobot {
     motor_right.set(ControlMode.PercentOutput, updated_right);
   }
 
-  private void ArduinDrive()
+  private void ArduinDrive(TalonSRX drive_left, TalonSRX drive_right)
   {
-    String error = read();
-    try {
-      Thread.sleep(100, 0);
-    } catch (Exception sleepInterupteException) {
-      System.out.println("sleepInterruptException");
-    }
-    System.out.println("Error:" + error);
-    if(!error.equals("none") && !error.equals(""))
+    byte[] output = m_arduino.read(1);
+    System.out.println(output[0]);
+
+    int error = output[0];
+
+    if(error > 0)
     {
-      try {
-        int drive_string = Integer.parseInt(error);
-      } catch (Exception parseIntException) {
-        System.out.println("Parsing the int is what broke");
-      }
-      int drive_string = Integer.parseInt(error);
-      System.out.println("Drive Int:" + drive_string);
-
-      double left;
-      double right;
-      if(drive_string > 0)
-      {
-        left = 1;
-        right = .5;
-      }
-      else if(drive_string < 0)
-      {
-        left = .5;
-        right = 1;
-      }
-      else
-      {
-        left = .5;
-        right = .5;
-      }
-
-      drive_left = left;
-      drive_right = right;
+      drive_left.set(ControlMode.PercentOutput, .2);
+      drive_right.set(ControlMode.PercentOutput, 0);
     }
+    
   }
-
-  public void write(String input){//writes to the arduino 
-    char[] CharArray = input.toCharArray();//creates a char array from the input string
-    byte[] WriteData = new byte[CharArray.length];//creates a byte array from the char array
-    for (int i = 0; i < CharArray.length; i++) {//writes each byte to the arduino
-      WriteData[i] = (byte) CharArray[i];//adds the char elements to the byte array 
-    }
-    Wire.transaction(WriteData, WriteData.length, null, 0);//sends each byte to arduino
-  }
-
-  private String read(){//function to read the data from arduino
-		byte[] data = new byte[MAX_BYTES];//create a byte array to hold the incoming data
-		Wire.read(4, MAX_BYTES, data);//use address 4 on i2c and store it in data
-    System.out.println(data);
-    String output = new String(data);//create a string from the byte array
-    System.out.println(output);
-    int pt = output.indexOf((char)255);
-		return (String) output.subSequence(0, pt < 0 ? 0 : pt);
-	}
 }
