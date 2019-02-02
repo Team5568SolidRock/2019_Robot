@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
     // Initialize Joysticks
     m_joystick_left = new Joystick(0);
     m_joystick_right = new Joystick(1);
-    m_gamepad = new Joystick(3);
+    m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
     m_left_front = new TalonSRX(2);
@@ -119,8 +119,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(!m_joystick_left.getRawButton(1)){
-      tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    if(!m_gamepad.getRawButton(1)){
+      tank_Drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_left_front, m_right_front);
     }
     else {
       Other.testPixy1();
