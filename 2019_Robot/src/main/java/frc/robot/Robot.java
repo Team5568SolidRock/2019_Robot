@@ -24,6 +24,7 @@ import frc.robot.classes.PixyLineFollow;
 import frc.robot.classes.SubSystems;
 import frc.robot.classes.Camera;
 
+
 public class Robot extends TimedRobot {
 
   //Create Joysticks
@@ -55,6 +56,9 @@ public class Robot extends TimedRobot {
   PixyLineFollow m_pixy;
   Camera m_camera;
 
+
+  // Create Shuffleboard
+  NetworkTableEntry m_climb_speed;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -63,6 +67,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
+
     m_joystickLeft = new Joystick(0);
     m_joystickRight = new Joystick(1);
     m_gamepad = new Joystick(3);
@@ -86,6 +91,7 @@ public class Robot extends TimedRobot {
     m_hatcher = new Solenoid(0);
 
     // Configure Drive
+
     m_rightFront.setInverted(true);
     m_rightBack.setInverted(true);
     m_leftBack.follow(m_leftFront);
@@ -96,6 +102,7 @@ public class Robot extends TimedRobot {
     m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_hatcher, .02);
     m_pixy = new PixyLineFollow();
     m_camera = new Camera();
+
   }
 
   /**
@@ -119,6 +126,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
+
   }
 
   /**
@@ -126,6 +134,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+
     // Drive with joysticks or pixy
     if(!m_joystickLeft.getRawButton(1)){
       m_drive.drive(m_joystickLeft.getRawAxis(1), m_joystickRight.getRawAxis(1), 1);
@@ -146,6 +155,7 @@ public class Robot extends TimedRobot {
       // Run Hatcher Subsystem
       m_subSystems.hatcher(m_gamepad.getRawButton(1));
     }
+
   }
 
   /**
@@ -155,3 +165,4 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 }
+
