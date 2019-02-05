@@ -10,16 +10,20 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
-
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Solenoid;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-import frc.robot.classes.PixyLineFollow;
+//import com.revrobotics.CANSparkMax;
+//import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import frc.robot.classes.TankDrive;
+import frc.robot.classes.PixyLineFollow;
+import frc.robot.classes.SubSystems;
+import frc.robot.classes.Camera;
+
 
 public class Robot extends TimedRobot {
 
@@ -34,9 +38,24 @@ public class Robot extends TimedRobot {
   VictorSPX m_leftBack;
   VictorSPX m_rightBack;
 
-  // Create Custom Classes
-  PixyLineFollow m_pixy;
+  // Create Climb Motors
+  Talon m_climbFront;
+  Talon m_climbBack;
+  Talon m_climbDrive;
+
+  // Create Lift Motor
+  //CANSparkMax m_lift;
+
+  // Create Compressor and Solenoids
+  Compressor m_compressor;
+  Solenoid m_hatcher;
+
+  //Create Custom Classes
   TankDrive m_drive;
+  SubSystems m_subSystems;
+  PixyLineFollow m_pixy;
+  Camera m_camera;
+
 
   // Create Shuffleboard
   NetworkTableEntry m_climb_speed;
@@ -51,23 +70,39 @@ public class Robot extends TimedRobot {
 
     m_joystickLeft = new Joystick(0);
     m_joystickRight = new Joystick(1);
-    m_gamepad = new Joystick(2);
+    m_gamepad = new Joystick(3);
 
     // Initialize Drive Motors
-    m_leftFront = new TalonSRX(7);
-    m_rightFront = new TalonSRX(9);
-    m_leftBack = new VictorSPX(6);
-    m_rightBack = new VictorSPX(8);
+    m_leftFront = new TalonSRX(2);
+    m_rightFront = new TalonSRX(1);
+    m_leftBack = new VictorSPX(3);
+    m_rightBack = new VictorSPX(4);
 
-    // Initialize Custom Classes
-    m_pixy = new PixyLineFollow();
-    m_drive = new TankDrive(m_leftFront, m_rightFront);
+    // Initialize Climb Motors
+    m_climbFront = new Talon(2);
+    m_climbBack = new Talon(0);
+    m_climbDrive = new Talon(1);
 
-    // Configure Victors
+    // Initialize Lift Motor
+    //m_lift = new CANSparkMax(7, MotorType.kBrushed);
+
+    // Initialize Compressor and Solenoids
+    m_compressor = new Compressor();
+    m_hatcher = new Solenoid(0);
+
+    // Configure Drive
+
     m_rightFront.setInverted(true);
     m_rightBack.setInverted(true);
     m_leftBack.follow(m_leftFront);
     m_rightBack.follow(m_rightFront);
+
+    // Initialize Custom Classes
+    m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_hatcher, .02);
+    m_pixy = new PixyLineFollow();
+    m_camera = new Camera();
+
   }
 
   /**
@@ -77,7 +112,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    m_pixy.arduinoRead();
+  }
+
+  /**
+   * This function is called when autonomous is first started.
+   */
+  @Override
+  public void autonomousInit() {
+  }
+
+  /**
+   * This function is called periodically during autonomous.
+   */
+  @Override
+  public void autonomousPeriodic() {
+
   }
 
   /**
@@ -85,13 +134,28 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(!m_gamepad.getRawButton(1)){
-      m_drive.drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), 1.);
+
+    // Drive with joysticks or pixy
+    if(!m_joystickLeft.getRawButton(1)){
+      m_drive.drive(m_joystickLeft.getRawAxis(1), m_joystickRight.getRawAxis(1), 1);
     }
     else {
       m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
     }
-    climb(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climb_back, m_climb_front, m_climb_drive);
+    // Run Climb or Lift and Hatcher Subsystems
+    if(m_gamepad.getRawAxis(3) > 0.2)
+    {
+      // Run Climber Subsystem
+      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(4));
+    }
+    else
+    {
+      // Run Lift Subsystem
+      m_subSystems.lift(m_gamepad.getRawAxis(1));
+      // Run Hatcher Subsystem
+      m_subSystems.hatcher(m_gamepad.getRawButton(1));
+    }
+
   }
 
   /**
@@ -100,62 +164,5 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
-
-
-  private void climb(double gamepad_left_y, double gamepad_right_y, double gamepad_left_trigger, double gamepad_right_trigger, boolean gamepad_button_a, Talon climb_back, Talon climb_front, Talon climb_drive)
-  {
-    // Impliment Deadzone
-    if(gamepad_left_y < DEADZONE && gamepad_left_y > -DEADZONE)
-    {
-      gamepad_left_y = 0;
-    }
-    if(gamepad_right_y < DEADZONE && gamepad_right_y > -DEADZONE)
-    {
-      gamepad_right_y = 0;
-    }
-    if(gamepad_left_trigger < DEADZONE && gamepad_left_trigger > -DEADZONE)
-    {
-      gamepad_left_trigger = 0;
-    }
-    if(gamepad_right_trigger < DEADZONE && gamepad_right_trigger > -DEADZONE)
-    {
-      gamepad_right_trigger = 0;
-    }
-
-    // Square joystick values
-    double updated_left = gamepad_left_y * Math.abs(gamepad_left_y);
-
-    double updated_right = gamepad_right_y * Math.abs(gamepad_right_y);
-
-    double updated_left_trigger = gamepad_left_trigger * Math.abs(gamepad_left_trigger);
-
-    double updated_right_trigger = gamepad_right_trigger * Math.abs(gamepad_right_trigger);
-
-
-    // Set front and back values
-    if(gamepad_button_a)
-    {
-      climb_front.set(updated_left * m_climb_speed.getDouble(.9));
-      climb_back.set(updated_left);
-    }
-    else
-    {
-      climb_front.set(updated_left);
-      climb_back.set(updated_right);
-    }
-
-    // Set drive values
-    if(updated_left_trigger > 0)
-    {
-      climb_drive.set(updated_left_trigger);
-    }
-    else if(updated_right_trigger > 0)
-    {
-      climb_drive.set(updated_right_trigger);
-    }
-    else
-    {
-      climb_drive.set(0);
-    }
-  }
 }
+
