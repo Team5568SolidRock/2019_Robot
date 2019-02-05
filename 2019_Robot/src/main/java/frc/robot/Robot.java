@@ -8,32 +8,30 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Joystick;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+import frc.robot.classes.PixyLineFollow;
+import frc.robot.classes.TankDrive;
+
 public class Robot extends TimedRobot {
 
-  //Constants
-  final double DEADZONE = .02;
-
   //Create Joysticks
-  Joystick m_joystick_left;
-  Joystick m_joystick_right;
+  Joystick m_joystickLeft;
+  Joystick m_joystickRight;
   Joystick m_gamepad;
 
   // Create Drive Motors
+  TalonSRX m_leftFront;
+  TalonSRX m_rightFront;
+  VictorSPX m_leftBack;
+  VictorSPX m_rightBack;
 
-  TalonSRX m_left_front;
-  TalonSRX m_right_front;
-  VictorSPX m_left_back;
-  VictorSPX m_right_back;
-
-  // Initialize Drive Motors
-  DifferentialDrive m_drive;
+  // Create Custom Classes
+  PixyLineFollow m_pixy;
+  TankDrive m_drive;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -43,19 +41,25 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
-    m_joystick_left = new Joystick(0);
-    m_joystick_right = new Joystick(1);
-    m_gamepad = new Joystick(3);
+    m_joystickLeft = new Joystick(0);
+    m_joystickRight = new Joystick(1);
+    m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
-    m_left_front = new TalonSRX(2);
-    m_right_front = new TalonSRX(1);
-    m_left_back = new VictorSPX(3);
-    m_right_back = new VictorSPX(4);
+    m_leftFront = new TalonSRX(7);
+    m_rightFront = new TalonSRX(9);
+    m_leftBack = new VictorSPX(6);
+    m_rightBack = new VictorSPX(8);
+
+    // Initialize Custom Classes
+    m_pixy = new PixyLineFollow();
+    m_drive = new TankDrive(m_leftFront, m_rightFront);
 
     // Configure Victors
-    m_left_back.follow(m_left_front);
-    m_right_back.follow(m_right_front);
+    m_rightFront.setInverted(true);
+    m_rightBack.setInverted(true);
+    m_leftBack.follow(m_leftFront);
+    m_rightBack.follow(m_rightFront);
   }
 
   /**
@@ -65,20 +69,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-  }
-
-  /**
-   * This function is called when autonomous is first started.
-   */
-  @Override
-  public void autonomousInit() {
-  }
-
-  /**
-   * This function is called periodically during autonomous.
-   */
-  @Override
-  public void autonomousPeriodic() {
+    m_pixy.arduinoRead();
   }
 
   /**
@@ -86,49 +77,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
-  }
-
-  /**
-   * This function is called periodically during test mode.
-   */
-  @Override
-  public void testPeriodic() {
-  }
-
-  private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_left, TalonSRX motor_right)
-  {
-    // Impliment Deadzone
-    if(joystick_left_y < DEADZONE && joystick_left_y > -DEADZONE)
-    {
-      joystick_left_y = 0;
+    if(!m_gamepad.getRawButton(1)){
+      m_drive.drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), 1.);
     }
-    if(joystick_right_y < DEADZONE && joystick_right_y > -DEADZONE)
-    {
-      joystick_right_y = 0;
+    else {
+      m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
     }
-
-    //Get signs
-    double left_sign = 1;
-    if (joystick_left_y < 0)
-    {
-      left_sign = -1;
-    }
-    double right_sign = 1;
-    if (joystick_right_y < 0)
-    {
-      right_sign = -1;
-    }
-    // Square joystick values
-    double updated_left = -(joystick_left_y * joystick_left_y * left_sign) / 2;
-
-    double updated_right = -(joystick_right_y * joystick_right_y * right_sign) / 2;
-
-    // Set left values
-    //motor_left.set(ControlMode.PercentOutput, updated_left);
-    motor_left.set(ControlMode.PercentOutput, updated_left);
-    // Set right values
-    //motor_right.set(ControlMode.PercentOutput, updated_right);
-    motor_right.set(ControlMode.PercentOutput, updated_right);
   }
 }
