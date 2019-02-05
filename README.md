@@ -24,6 +24,36 @@ Language: Java
 
 # Robot Configuration
 
+Drive:
+
+-TalonSRX Front Left: CAN 9?
+
+-TalonSRX Front Right: CAN 7?
+
+-TalonSRX Back Left: CAN 8?
+
+-TalonSRX Back Right: CAN 6?
+
+Climb:
+
+-Talon Climb Front: PWM 2?
+
+-Talon Climb Back: PWM 0?
+
+-Talon Climb Drive: PWM 1?
+
+Lift:
+
+-SparkMAX Lift: CAN 6?
+
+Intake:
+
+-Talon Intake: PWM 3?
+
+Hatcher:
+
+-Solenoid Kicker: Solenoid 0
+
 # Joystick Configuration
 Drive:
 
