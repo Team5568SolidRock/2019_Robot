@@ -8,6 +8,8 @@
 package frc.robot.classes;
 
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -15,28 +17,38 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
  * This class is used to run basic tank drive.
  */
 public class TankDrive {
+
+    // Create TalonSRX Speed Controllers
     private TalonSRX m_SrxLeft;
     private TalonSRX m_SrxRight;
 
+    // Create SpeedControllers
     private SpeedController m_leftFront;
     private SpeedController m_leftBack;
     private SpeedController m_rightFront;
     private SpeedController m_rightBack;
 
+    // Create Variables
     private boolean isFour;
     private boolean isSRX;
+    
+    // Create Configurable Values
+    public NetworkTableEntry m_deadzone;
 
     /**
      * Configures the drivebase with 2 TalonSRXs
      * @param motorLeft The left TalonSRX
      * @param motorRight The right TalonSRX
+     * @param defaultDeadzone The default for Switchboard deadzone value
      */
-    public TankDrive(TalonSRX motorLeft, TalonSRX motorRight)
+    public TankDrive(TalonSRX motorLeft, TalonSRX motorRight, double defaultDeadzone)
     {
         m_SrxLeft = motorLeft;
         m_SrxRight = motorRight;
         isFour = false;
         isSRX = true;
+
+        m_deadzone = Shuffleboard.getTab("TankDrive").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
     }
 
     /**
@@ -79,18 +91,17 @@ public class TankDrive {
     public void drive(double joystickLeftY, double joystickRightY, double speed)
     {
         // Impliment Deadzone
-        if(joystickLeftY < .02 && joystickLeftY > -.02)
+        if(joystickLeftY < m_deadzone.getDouble(.02) && joystickLeftY > -m_deadzone.getDouble(.02))
         {
         joystickLeftY = 0;
         }
-        if(joystickRightY < .02 && joystickRightY > -.02)
+        if(joystickRightY < m_deadzone.getDouble(.02) && joystickRightY > -m_deadzone.getDouble(.02))
         {
         joystickRightY = 0;
         }
 
         // Square joystick values
         double updatedLeft = joystickLeftY * Math.abs(joystickLeftY);
-
         double updatedRight = joystickRightY * Math.abs(joystickRightY);
 
         // Set Motor Values

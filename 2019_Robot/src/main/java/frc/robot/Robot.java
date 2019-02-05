@@ -9,18 +9,20 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+//import com.revrobotics.CANSparkMax;
+//import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import frc.robot.classes.TankDrive;
 import frc.robot.classes.PixyLineFollow;
+import frc.robot.classes.SubSystems;
+import frc.robot.classes.Camera;
 
 public class Robot extends TimedRobot {
 
@@ -35,19 +37,23 @@ public class Robot extends TimedRobot {
   VictorSPX m_leftBack;
   VictorSPX m_rightBack;
 
+  // Create Climb Motors
+  Talon m_climbFront;
+  Talon m_climbBack;
+  Talon m_climbDrive;
+
+  // Create Lift Motor
+  //CANSparkMax m_lift;
+
   // Create Compressor and Solenoids
   Compressor m_compressor;
-  Solenoid m_solenoid1;
-
-  // Create Camera
-  UsbCamera m_camera;
-
-  // Create Configurable Values
-  NetworkTableEntry m_deadzone;
+  Solenoid m_hatcher;
 
   //Create Custom Classes
   TankDrive m_drive;
+  SubSystems m_subSystems;
   PixyLineFollow m_pixy;
+  Camera m_camera;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -67,9 +73,17 @@ public class Robot extends TimedRobot {
     m_leftBack = new VictorSPX(3);
     m_rightBack = new VictorSPX(4);
 
+    // Initialize Climb Motors
+    m_climbFront = new Talon(2);
+    m_climbBack = new Talon(0);
+    m_climbDrive = new Talon(1);
+
+    // Initialize Lift Motor
+    //m_lift = new CANSparkMax(7, MotorType.kBrushed);
+
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
-    m_solenoid1 = new Solenoid(0);
+    m_hatcher = new Solenoid(0);
 
     // Configure Drive
     m_rightFront.setInverted(true);
@@ -77,15 +91,11 @@ public class Robot extends TimedRobot {
     m_leftBack.follow(m_leftFront);
     m_rightBack.follow(m_rightFront);
 
-    // Initialize CameraServer
-    CameraServer.getInstance().startAutomaticCapture();
-
-    // Initialize Shuffleboard
-    m_deadzone = Shuffleboard.getTab("Configuration").add("Joystick Deadzone", .02).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
-
     // Initialize Custom Classes
-    m_drive = new TankDrive(m_leftFront, m_rightFront);
+    m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_hatcher, .02);
     m_pixy = new PixyLineFollow();
+    m_camera = new Camera();
   }
 
   /**
@@ -116,13 +126,26 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    // Drive with joysticks or pixy
     if(!m_joystickLeft.getRawButton(1)){
       m_drive.drive(m_joystickLeft.getRawAxis(1), m_joystickRight.getRawAxis(1), 1);
     }
     else {
       m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
     }
-    kicker(m_solenoid1, m_joystickRight.getRawButton(1));
+    // Run Climb or Lift and Hatcher Subsystems
+    if(m_gamepad.getRawAxis(3) > 0.2)
+    {
+      // Run Climber Subsystem
+      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(4));
+    }
+    else
+    {
+      // Run Lift Subsystem
+      m_subSystems.lift(m_gamepad.getRawAxis(1));
+      // Run Hatcher Subsystem
+      m_subSystems.hatcher(m_gamepad.getRawButton(1));
+    }
   }
 
   /**
@@ -130,10 +153,5 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
-  }
-
-  private void kicker(Solenoid solenoid1, Boolean button)
-  {
-    solenoid1.set(button);
   }
 }
