@@ -13,16 +13,9 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
-import java.io.DataOutputStream;
-import java.util.Base64;
-
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
@@ -32,34 +25,25 @@ import frc.robot.classes.PixyLineFollow;
 public class Robot extends TimedRobot {
 
   //Create Joysticks
-  Joystick m_joystick_left;
-  Joystick m_joystick_right;
+  Joystick m_joystickLeft;
+  Joystick m_joystickRight;
   Joystick m_gamepad;
 
   // Create Drive Motors
-  TalonSRX m_left_front;
-  TalonSRX m_right_front;
-  VictorSPX m_left_back;
-  VictorSPX m_right_back;
-
-  // Create Encoders
-  Encoder m_left;
-  Encoder m_right;
+  TalonSRX m_leftFront;
+  TalonSRX m_rightFront;
+  VictorSPX m_leftBack;
+  VictorSPX m_rightBack;
 
   // Create Compressor and Solenoids
   Compressor m_compressor;
-  Solenoid m_solenoid_1;
-  Solenoid m_solenoid_2;
+  Solenoid m_solenoid1;
 
   // Create Camera
   UsbCamera m_camera;
 
   // Create Configurable Values
   NetworkTableEntry m_deadzone;
-
-  // Create Shuffleboard Objects
-  ShuffleboardTab m_drive_base_tab;
-  ShuffleboardLayout m_encoders_layout;
 
   //Create Custom Classes
   TankDrive m_drive;
@@ -73,43 +57,34 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
-    m_joystick_left = new Joystick(0);
-    m_joystick_right = new Joystick(1);
+    m_joystickLeft = new Joystick(0);
+    m_joystickRight = new Joystick(1);
     m_gamepad = new Joystick(3);
 
     // Initialize Drive Motors
-    m_left_front = new TalonSRX(2);
-    m_right_front = new TalonSRX(1);
-    m_left_back = new VictorSPX(3);
-    m_right_back = new VictorSPX(4);
-
-    // Initialize Encoders
-    m_left = new Encoder(1, 2, false);
-    //m_right = new Encoder(3, 4, true);
+    m_leftFront = new TalonSRX(2);
+    m_rightFront = new TalonSRX(1);
+    m_leftBack = new VictorSPX(3);
+    m_rightBack = new VictorSPX(4);
 
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
-    m_solenoid_1 = new Solenoid(0);
-    m_solenoid_2 = new Solenoid(1);
+    m_solenoid1 = new Solenoid(0);
 
-    // Configure Victors
-    //m_right_front.setInverted(true);
-    m_left_back.follow(m_left_front);
-    m_right_back.follow(m_right_front);
+    // Configure Drive
+    m_rightFront.setInverted(true);
+    m_rightBack.setInverted(true);
+    m_leftBack.follow(m_leftFront);
+    m_rightBack.follow(m_rightFront);
 
     // Initialize CameraServer
-    CameraServer.getInstance().startAutomaticCapture();
     CameraServer.getInstance().startAutomaticCapture();
 
     // Initialize Shuffleboard
     m_deadzone = Shuffleboard.getTab("Configuration").add("Joystick Deadzone", .02).withWidget("Number Slider").withPosition(1, 1).withSize(2, 1).getEntry();
-    m_drive_base_tab = Shuffleboard.getTab("Drivebase");
-    m_encoders_layout = m_drive_base_tab.getLayout("List Layout", "Encoders").withPosition(0, 0).withSize(2, 2);
-    m_encoders_layout.add("Left Encoder", m_left);
-    //m_encoders_layout.add("Right Encoder", m_right);
 
     // Initialize Custom Classes
-    m_drive = new TankDrive(m_left_front, m_right_front);
+    m_drive = new TankDrive(m_leftFront, m_rightFront);
     m_pixy = new PixyLineFollow();
   }
 
@@ -141,13 +116,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(!m_joystick_left.getRawButton(1)){
-      m_drive.drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), 1);
+    if(!m_joystickLeft.getRawButton(1)){
+      m_drive.drive(m_joystickLeft.getRawAxis(1), m_joystickRight.getRawAxis(1), 1);
     }
     else {
-      m_pixy.lineFollowTalonSRX(m_left_front, m_right_front, .2);
+      m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
     }
-    kicker(m_solenoid_1, m_solenoid_2, m_joystick_right.getRawButton(1));
+    kicker(m_solenoid1, m_joystickRight.getRawButton(1));
   }
 
   /**
@@ -157,8 +132,8 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void kicker(Solenoid solenoid_1, Solenoid solenoid_2, Boolean button)
+  private void kicker(Solenoid solenoid1, Boolean button)
   {
-    solenoid_1.set(button);
+    solenoid1.set(button);
   }
 }
