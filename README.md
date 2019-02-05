@@ -17,14 +17,14 @@ Language: Java
 # Coding Standards
 -Refer to FRC coding standards page
 
-# Requirements:
+# Requirements
 -WPILib Library
 
 -CTR Electronics Library
 
-# Robot Configuration:
+# Robot Configuration
 
-# Joystick Configuration:
+# Joystick Configuration
 Drive:
 
 -Left Joystick (Axis 1): Tank Drive Left
