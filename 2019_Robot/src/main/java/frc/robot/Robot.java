@@ -18,10 +18,6 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.I2C.Port;
 
 import java.io.DataOutputStream;
 import java.util.Base64;
@@ -30,10 +26,10 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+import frc.robot.classes.TankDrive;
+import frc.robot.classes.PixyLineFollow;
+
 public class Robot extends TimedRobot {
-  //Create and Initialize I2C Ports & MAX_BYTES
-  private static I2C Wire = new I2C(Port.kOnboard, 4);
-	private static final int MAX_BYTES = 32;
 
   //Create Joysticks
   Joystick m_joystick_left;
@@ -65,15 +61,9 @@ public class Robot extends TimedRobot {
   ShuffleboardTab m_drive_base_tab;
   ShuffleboardLayout m_encoders_layout;
 
-  // Create SerialPort connection
-  SerialPort m_arduino;
-
-  // Create digital input
-  DigitalInput ArduinoLeft;
-  DigitalInput ArduinoRight;
-
-  Double drive_left;
-  Double drive_right;
+  //Create Custom Classes
+  TankDrive m_drive;
+  PixyLineFollow m_pixy;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -118,12 +108,9 @@ public class Robot extends TimedRobot {
     m_encoders_layout.add("Left Encoder", m_left);
     //m_encoders_layout.add("Right Encoder", m_right);
 
-    // Initialize SerialPort
-    m_arduino = new SerialPort(9600, SerialPort.Port.kUSB);
-
-    // Initialize DigitalInput
-    //ArduinoLeft = new DigitalInput(0);
-    //ArduinoRight = new DigitalInput(1);
+    // Initialize Custom Classes
+    m_drive = new TankDrive(m_left_front, m_right_front);
+    m_pixy = new PixyLineFollow();
   }
 
   /**
@@ -140,13 +127,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    while(true)
-    {
-      if(m_joystick_left.getRawButton(1))
-      {
-        ArduinDrive();
-      }
-    }
   }
 
   /**
@@ -162,10 +142,10 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     if(!m_joystick_left.getRawButton(1)){
-      tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+      m_drive.drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), 1);
     }
     else {
-      ArduinDrive();
+      m_pixy.lineFollowTalonSRX(m_left_front, m_right_front, .2);
     }
     kicker(m_solenoid_1, m_solenoid_2, m_joystick_right.getRawButton(1));
   }
@@ -177,78 +157,8 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_left, TalonSRX motor_right)
-  {
-    // Impliment Deadzone
-    if(joystick_left_y < m_deadzone.getDouble(.02) && joystick_left_y > -m_deadzone.getDouble(.02))
-    {
-      joystick_left_y = 0;
-    }
-    if(joystick_right_y < m_deadzone.getDouble(.02) && joystick_right_y > -m_deadzone.getDouble(.02))
-    {
-      joystick_right_y = 0;
-    }
-
-    // Square joystick values
-    double updated_left = -joystick_left_y * Math.abs(joystick_left_y);
-
-    double updated_right = joystick_right_y * Math.abs(joystick_right_y);
-
-    // Set left values
-    motor_left.set(ControlMode.PercentOutput, updated_left);
-    
-    // Set right values
-    motor_right.set(ControlMode.PercentOutput, updated_right);
-  }
-
   private void kicker(Solenoid solenoid_1, Solenoid solenoid_2, Boolean button)
   {
     solenoid_1.set(button);
-    //solenoid_2.set(button);
   }
-
-  private void ArduinDrive()
-  {
-    int drive_string = Integer.parseInt(read());
-    System.out.println(drive_string);
-
-    double left;
-    double right;
-    if(drive_string > 0)
-    {
-      left = 1;
-      right = .5;
-    }
-    else if(drive_string < 0)
-    {
-      left = .5;
-      right = 1;
-    }
-    else
-    {
-      left = .5;
-      right = .5;
-    }
-    System.out.println("Left:" + left);
-    System.out.println("Right:" + right);
-    m_left_front.set(ControlMode.PercentOutput, m_joystick_left.getRawAxis(1));
-    m_right_front.set(ControlMode.PercentOutput, m_joystick_right.getRawAxis(1));
-  }
-
-  public void write(String input){//writes to the arduino 
-    char[] CharArray = input.toCharArray();//creates a char array from the input string
-    byte[] WriteData = new byte[CharArray.length];//creates a byte array from the char array
-    for (int i = 0; i < CharArray.length; i++) {//writes each byte to the arduino
-      WriteData[i] = (byte) CharArray[i];//adds the char elements to the byte array 
-    }
-    Wire.transaction(WriteData, WriteData.length, null, 0);//sends each byte to arduino
-  }
-
-  private String read(){//function to read the data from arduino
-		byte[] data = new byte[MAX_BYTES];//create a byte array to hold the incoming data
-		Wire.read(4, MAX_BYTES, data);//use address 4 on i2c and store it in data
-		String output = new String(data);//create a string from the byte array
-		int pt = output.indexOf((char)255);
-		return (String) output.subSequence(0, pt < 0 ? 0 : pt);
-	}
 }
