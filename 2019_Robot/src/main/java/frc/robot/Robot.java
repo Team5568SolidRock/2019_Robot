@@ -8,7 +8,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 
@@ -16,30 +15,28 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
+import frc.robot.classes.PixyLineFollow;
+import frc.robot.classes.TankDrive;
+
 public class Robot extends TimedRobot {
 
-  //Constants
-  final double DEADZONE = .02;
-
   //Create Joysticks
-  Joystick m_joystick_left;
-  Joystick m_joystick_right;
+  Joystick m_joystickLeft;
+  Joystick m_joystickRight;
   Joystick m_gamepad;
 
   // Create Drive Motors
-  TalonSRX m_left_front;
-  TalonSRX m_right_front;
-  VictorSPX m_left_back;
-  VictorSPX m_right_back;
+  TalonSRX m_leftFront;
+  TalonSRX m_rightFront;
+  VictorSPX m_leftBack;
+  VictorSPX m_rightBack;
 
-  // Create Climb
-  Talon m_climb_front;
-  Talon m_climb_back;
-  Talon m_climb_drive;
+  // Create Custom Classes
+  PixyLineFollow m_pixy;
+  TankDrive m_drive;
 
   // Create Shuffleboard
   NetworkTableEntry m_climb_speed;
@@ -51,29 +48,26 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
-    m_joystick_left = new Joystick(0);
-    m_joystick_right = new Joystick(1);
+
+    m_joystickLeft = new Joystick(0);
+    m_joystickRight = new Joystick(1);
     m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
-    m_left_front = new TalonSRX(7);
-    m_right_front = new TalonSRX(9);
-    m_left_back = new VictorSPX(6);
-    m_right_back = new VictorSPX(8);
+    m_leftFront = new TalonSRX(7);
+    m_rightFront = new TalonSRX(9);
+    m_leftBack = new VictorSPX(6);
+    m_rightBack = new VictorSPX(8);
 
-    // Initialize Climb Motors
-    m_climb_front = new Talon(2);
-    m_climb_back = new Talon(0);
-    m_climb_drive = new Talon(1);
-    
+    // Initialize Custom Classes
+    m_pixy = new PixyLineFollow();
+    m_drive = new TankDrive(m_leftFront, m_rightFront);
+
     // Configure Victors
-    m_left_front.setInverted(true);
-    m_left_back.setInverted(true);
-    m_left_back.follow(m_left_front);
-    m_right_back.follow(m_right_front);
-
-    // Initialize Shuffleboard
-    m_climb_speed = Shuffleboard.getTab("Configuration").add("Front Climb", .9).withWidget("Text View").withPosition(1, 1).withSize(2, 1).getEntry();
+    m_rightFront.setInverted(true);
+    m_rightBack.setInverted(true);
+    m_leftBack.follow(m_leftFront);
+    m_rightBack.follow(m_rightFront);
   }
 
   /**
@@ -83,20 +77,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-  }
-
-  /**
-   * This function is called when autonomous is first started.
-   */
-  @Override
-  public void autonomousInit() {
-  }
-
-  /**
-   * This function is called periodically during autonomous.
-   */
-  @Override
-  public void autonomousPeriodic() {
+    m_pixy.arduinoRead();
   }
 
   /**
@@ -104,7 +85,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    tank_Drive(m_joystick_left.getRawAxis(1), m_joystick_right.getRawAxis(1), m_left_front, m_right_front);
+    if(!m_gamepad.getRawButton(1)){
+      m_drive.drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), 1.);
+    }
+    else {
+      m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
+    }
     climb(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climb_back, m_climb_front, m_climb_drive);
   }
 
@@ -115,29 +101,6 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_left, TalonSRX motor_right)
-  {
-    // Impliment Deadzone
-    if(joystick_left_y < DEADZONE && joystick_left_y > -DEADZONE)
-    {
-      joystick_left_y = 0;
-    }
-    if(joystick_right_y < DEADZONE && joystick_right_y > -DEADZONE)
-    {
-      joystick_right_y = 0;
-    }
-
-    // Square joystick values
-    double updated_left = joystick_left_y * Math.abs(joystick_left_y);
-
-    double updated_right = joystick_right_y * Math.abs(joystick_right_y);
-
-    // Set left values
-    motor_left.set(ControlMode.PercentOutput, updated_left);
-
-    // Set right values
-    motor_right.set(ControlMode.PercentOutput, updated_right);
-  }
 
   private void climb(double gamepad_left_y, double gamepad_right_y, double gamepad_left_trigger, double gamepad_right_trigger, boolean gamepad_button_a, Talon climb_back, Talon climb_front, Talon climb_drive)
   {
