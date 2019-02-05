@@ -8,33 +8,38 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Talon;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+
+import frc.robot.classes.PixyLineFollow;
+import frc.robot.classes.TankDrive;
 
 public class Robot extends TimedRobot {
 
-  //Constants
-  final double DEADZONE = .02;
-
   //Create Joysticks
-  Joystick m_joystick_left;
-  Joystick m_joystick_right;
+  Joystick m_joystickLeft;
+  Joystick m_joystickRight;
   Joystick m_gamepad;
 
   // Create Drive Motors
+  TalonSRX m_leftFront;
+  TalonSRX m_rightFront;
+  VictorSPX m_leftBack;
+  VictorSPX m_rightBack;
 
-  TalonSRX m_left_front;
-  TalonSRX m_right_front;
-  Talon m_left_back;
-  Talon m_right_back;
+  // Create Custom Classes
+  PixyLineFollow m_pixy;
+  TankDrive m_drive;
 
-  // Initialize Drive Motors
-  DifferentialDrive m_drive;
-
+  // Create Shuffleboard
+  NetworkTableEntry m_climb_speed;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -43,15 +48,26 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
-    m_joystick_left = new Joystick(0);
-    m_joystick_right = new Joystick(1);
-    m_gamepad = new Joystick(3);
+
+    m_joystickLeft = new Joystick(0);
+    m_joystickRight = new Joystick(1);
+    m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
-    m_left_front = new TalonSRX(0);
-    m_right_front = new TalonSRX(1);
-    m_left_back = new Talon(2);
-    m_right_back = new Talon(3);
+    m_leftFront = new TalonSRX(7);
+    m_rightFront = new TalonSRX(9);
+    m_leftBack = new VictorSPX(6);
+    m_rightBack = new VictorSPX(8);
+
+    // Initialize Custom Classes
+    m_pixy = new PixyLineFollow();
+    m_drive = new TankDrive(m_leftFront, m_rightFront);
+
+    // Configure Victors
+    m_rightFront.setInverted(true);
+    m_rightBack.setInverted(true);
+    m_leftBack.follow(m_leftFront);
+    m_rightBack.follow(m_rightFront);
   }
 
   /**
@@ -61,20 +77,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-  }
-
-  /**
-   * This function is called when autonomous is first started.
-   */
-  @Override
-  public void autonomousInit() {
-  }
-
-  /**
-   * This function is called periodically during autonomous.
-   */
-  @Override
-  public void autonomousPeriodic() {
+    m_pixy.arduinoRead();
   }
 
   /**
@@ -82,7 +85,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    tank_Drive(m_joystick_right.getY(), m_joystick_left.getY(), m_left_front, m_right_front, m_left_back, m_right_back);
+    if(!m_gamepad.getRawButton(1)){
+      m_drive.drive(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), 1.);
+    }
+    else {
+      m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
+    }
+    climb(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climb_back, m_climb_front, m_climb_drive);
   }
 
   /**
@@ -92,29 +101,61 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  private void tank_Drive(double joystick_left_y, double joystick_right_y, TalonSRX motor_front_left, TalonSRX motor_front_right, Talon motor_back_left, Talon motor_back_right)
+
+  private void climb(double gamepad_left_y, double gamepad_right_y, double gamepad_left_trigger, double gamepad_right_trigger, boolean gamepad_button_a, Talon climb_back, Talon climb_front, Talon climb_drive)
   {
     // Impliment Deadzone
-    if(joystick_left_y < DEADZONE)
+    if(gamepad_left_y < DEADZONE && gamepad_left_y > -DEADZONE)
     {
-      joystick_left_y = 0;
+      gamepad_left_y = 0;
     }
-    if(joystick_right_y < DEADZONE)
+    if(gamepad_right_y < DEADZONE && gamepad_right_y > -DEADZONE)
     {
-      joystick_right_y = 0;
+      gamepad_right_y = 0;
+    }
+    if(gamepad_left_trigger < DEADZONE && gamepad_left_trigger > -DEADZONE)
+    {
+      gamepad_left_trigger = 0;
+    }
+    if(gamepad_right_trigger < DEADZONE && gamepad_right_trigger > -DEADZONE)
+    {
+      gamepad_right_trigger = 0;
     }
 
     // Square joystick values
-    double updated_left = (joystick_left_y * joystick_left_y) / 2;
+    double updated_left = gamepad_left_y * Math.abs(gamepad_left_y);
 
-    double updated_right = (joystick_right_y * joystick_right_y) / 2;
+    double updated_right = gamepad_right_y * Math.abs(gamepad_right_y);
 
-    // Set left values
-    motor_front_left.set(ControlMode.PercentOutput, updated_left);
-    motor_back_left.set(updated_left);
+    double updated_left_trigger = gamepad_left_trigger * Math.abs(gamepad_left_trigger);
 
-    // Set right values
-    motor_front_right.set(ControlMode.PercentOutput, updated_right);
-    motor_back_right.set(updated_right);
+    double updated_right_trigger = gamepad_right_trigger * Math.abs(gamepad_right_trigger);
+
+
+    // Set front and back values
+    if(gamepad_button_a)
+    {
+      climb_front.set(updated_left * m_climb_speed.getDouble(.9));
+      climb_back.set(updated_left);
+    }
+    else
+    {
+      climb_front.set(updated_left);
+      climb_back.set(updated_right);
+    }
+
+    // Set drive values
+    if(updated_left_trigger > 0)
+    {
+      climb_drive.set(updated_left_trigger);
+    }
+    else if(updated_right_trigger > 0)
+    {
+      climb_drive.set(updated_right_trigger);
+    }
+    else
+    {
+      climb_drive.set(0);
+    }
   }
 }
