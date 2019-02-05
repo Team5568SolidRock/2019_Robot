@@ -9,6 +9,11 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Talon;
+
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -33,6 +38,8 @@ public class Robot extends TimedRobot {
   PixyLineFollow m_pixy;
   TankDrive m_drive;
 
+  // Create Shuffleboard
+  NetworkTableEntry m_climb_speed;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -41,6 +48,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     // Initialize Joysticks
+
     m_joystickLeft = new Joystick(0);
     m_joystickRight = new Joystick(1);
     m_gamepad = new Joystick(2);
@@ -82,6 +90,72 @@ public class Robot extends TimedRobot {
     }
     else {
       m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
+    }
+    climb(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climb_back, m_climb_front, m_climb_drive);
+  }
+
+  /**
+   * This function is called periodically during test mode.
+   */
+  @Override
+  public void testPeriodic() {
+  }
+
+
+  private void climb(double gamepad_left_y, double gamepad_right_y, double gamepad_left_trigger, double gamepad_right_trigger, boolean gamepad_button_a, Talon climb_back, Talon climb_front, Talon climb_drive)
+  {
+    // Impliment Deadzone
+    if(gamepad_left_y < DEADZONE && gamepad_left_y > -DEADZONE)
+    {
+      gamepad_left_y = 0;
+    }
+    if(gamepad_right_y < DEADZONE && gamepad_right_y > -DEADZONE)
+    {
+      gamepad_right_y = 0;
+    }
+    if(gamepad_left_trigger < DEADZONE && gamepad_left_trigger > -DEADZONE)
+    {
+      gamepad_left_trigger = 0;
+    }
+    if(gamepad_right_trigger < DEADZONE && gamepad_right_trigger > -DEADZONE)
+    {
+      gamepad_right_trigger = 0;
+    }
+
+    // Square joystick values
+    double updated_left = gamepad_left_y * Math.abs(gamepad_left_y);
+
+    double updated_right = gamepad_right_y * Math.abs(gamepad_right_y);
+
+    double updated_left_trigger = gamepad_left_trigger * Math.abs(gamepad_left_trigger);
+
+    double updated_right_trigger = gamepad_right_trigger * Math.abs(gamepad_right_trigger);
+
+
+    // Set front and back values
+    if(gamepad_button_a)
+    {
+      climb_front.set(updated_left * m_climb_speed.getDouble(.9));
+      climb_back.set(updated_left);
+    }
+    else
+    {
+      climb_front.set(updated_left);
+      climb_back.set(updated_right);
+    }
+
+    // Set drive values
+    if(updated_left_trigger > 0)
+    {
+      climb_drive.set(updated_left_trigger);
+    }
+    else if(updated_right_trigger > 0)
+    {
+      climb_drive.set(updated_right_trigger);
+    }
+    else
+    {
+      climb_drive.set(0);
     }
   }
 }
