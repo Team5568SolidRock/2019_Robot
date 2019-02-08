@@ -56,9 +56,6 @@ public class Robot extends TimedRobot {
   PixyLineFollow m_pixy;
   Camera m_camera;
 
-
-  // Create Shuffleboard
-  NetworkTableEntry m_climb_speed;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
