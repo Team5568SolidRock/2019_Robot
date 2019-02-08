@@ -26,29 +26,29 @@ Language: Java
 
 Drive:
 
--TalonSRX Front Left: CAN 9?
+-TalonSRX Front Left: CAN 7
 
--TalonSRX Front Right: CAN 7?
+-TalonSRX Front Right: CAN 9
 
--TalonSRX Back Left: CAN 8?
+-TalonSRX Back Left: CAN 6
 
--TalonSRX Back Right: CAN 6?
+-TalonSRX Back Right: CAN 8
 
 Climb:
 
--Talon Climb Front: PWM 2?
+-Talon Climb Front: PWM 2
 
--Talon Climb Back: PWM 0?
+-Talon Climb Back: PWM 0
 
--Talon Climb Drive: PWM 1?
+-Talon Climb Drive: PWM 1
 
 Lift:
 
--SparkMAX Lift: CAN 6?
+-SparkMAX Lift: CAN 4
 
 Intake:
 
--Talon Intake: PWM 3?
+-Talon Intake: PWM 3
 
 Hatcher:
 
