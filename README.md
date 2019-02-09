@@ -59,7 +59,7 @@ Drive:
 
 -Left Joystick (Axis 1): Tank Drive Left
 
--Right Joystick (Axis 1): Tank Drive
+-Right Joystick (Axis 1): Tank Drive Right
 
 Drive-Assist:
 
@@ -67,7 +67,7 @@ Drive-Assist:
 
 Climb:
 
--Gamepad Left Bumper (Button 5?): Hold To Activate Climb Functions
+-Gamepad Left Bumper (Button 5): Hold To Activate Climb Functions
 
 -Gamepad Left Joystick (Axis 1): Front Climb
 
