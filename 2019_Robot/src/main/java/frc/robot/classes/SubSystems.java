@@ -32,6 +32,8 @@ public class SubSystems {
 
     // Create Solenoid
     private Solenoid m_hatcher;
+    private Solenoid m_hatcherDrop;
+    private Solenoid m_hatcherLift;
 
     // Create Configurable Values
     public NetworkTableEntry m_deadzone;
@@ -46,7 +48,7 @@ public class SubSystems {
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Talon Intake, Solenoid Hatcher, double defaultDeadzone)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
@@ -54,6 +56,8 @@ public class SubSystems {
         //m_lift = Lift;
         m_intake = Intake;
         m_hatcher = Hatcher;
+        m_hatcherDrop = HatcherDrop;
+        m_hatcherLift = HatcherLift;
 
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
     }
@@ -136,10 +140,13 @@ public class SubSystems {
 
     /**
      * Runs the hatcher solenoid
-     * @param button The button to activate the solenoid
+     * @param buttonKick The button to activate the kicker solenoid
+     * @param button
      */
-    public void hatcher(Boolean button)
+    public void hatcher(Boolean buttonKick, Boolean buttonDrop, Boolean buttonLift)
     {
-      m_hatcher.set(button);
+      m_hatcher.set(buttonKick);
+      m_hatcherDrop.set(buttonDrop);
+      m_hatcherLift.set(buttonLift);
     }
 }

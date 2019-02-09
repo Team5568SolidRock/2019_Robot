@@ -52,11 +52,13 @@ public class Robot extends TimedRobot {
   // Create Compressor and Solenoids
   Compressor m_compressor;
   Solenoid m_hatcher;
+  Solenoid m_hatcherDrop;
+  Solenoid m_hatcherLift;
 
   //Create Custom Classes
   TankDrive m_drive;
   SubSystems m_subSystems;
-  PixyLineFollow m_pixy;
+  //PixyLineFollow m_pixy;
   Camera m_camera;
 
   /**
@@ -91,7 +93,9 @@ public class Robot extends TimedRobot {
 
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
-    m_hatcher = new Solenoid(0);
+    m_hatcher = new Solenoid(1);
+    m_hatcherDrop = new Solenoid(2);
+    m_hatcherLift = new Solenoid(3);
 
     // Configure Drive
 
@@ -102,8 +106,8 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_intake, m_hatcher, .02);
-    m_pixy = new PixyLineFollow();
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02);
+    //m_pixy = new PixyLineFollow();
     m_camera = new Camera();
 
   }
@@ -115,6 +119,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    //m_pixy.arduinoRead();
   }
 
   /**
@@ -143,22 +148,22 @@ public class Robot extends TimedRobot {
       m_drive.drive(m_joystickLeft.getRawAxis(1), m_joystickRight.getRawAxis(1), 1);
     }
     else {
-      m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
+      //m_pixy.lineFollowTalonSRX(m_leftFront, m_rightFront, .2);
     }
     // Run Climb or Lift and Hatcher Subsystems
-    if(m_gamepad.getRawAxis(3) > 0.2)
+    if(m_gamepad.getRawButton(5))
     {
       // Run Climber Subsystem
-      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(4));
+      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3));
     }
     else
     {
       // Run Lift Subsystem
       m_subSystems.lift(m_gamepad.getRawAxis(1));
       // Run Intake Subsystem
-      m_subSystems.intake(m_gamepad.getRawAxis(3), m_gamepad.getRawAxis(4));
+      m_subSystems.intake(m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3));
       // Run Hatcher Subsystem
-      m_subSystems.hatcher(m_gamepad.getRawButton(1));
+      m_subSystems.hatcher(m_gamepad.getRawButton(1), m_gamepad.getRawButton(2), m_gamepad.getRawButton(3));
     }
 
   }
