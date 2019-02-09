@@ -27,6 +27,9 @@ public class SubSystems {
     // Create Spark Max Speed Controller
     //private CANSparkMax m_lift;
 
+    // Create Talon Intake Controller
+    private Talon m_intake;
+
     // Create Solenoid
     private Solenoid m_hatcher;
 
@@ -39,15 +42,17 @@ public class SubSystems {
      * @param ClimbBack The motor for the Talon back climber
      * @param ClimbDrive The Talon drive motor on the climber
      * @param Lift The CANSparkMax Lift Motor
+     * @param Intake The intake motor
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Solenoid Hatcher, double defaultDeadzone)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Talon Intake, Solenoid Hatcher, double defaultDeadzone)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
         m_climbDrive = ClimbDrive;
         //m_lift = Lift;
+        m_intake = Intake;
         m_hatcher = Hatcher;
 
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
@@ -105,6 +110,28 @@ public class SubSystems {
 
         // Set motor value
         //m_lift.set(updatedY);
+    }
+
+
+    /**
+     * Runs the intake motor
+     * @param trigerLeft The trigger to intake
+     * @param triggerRight The trigger to output
+     */
+    public void intake(double triggerLeft, double triggerRight)
+    {
+        if(triggerLeft > m_deadzone.getDouble(.02))
+        {
+            m_intake.set(-triggerLeft);
+        }
+        else if(triggerRight > m_deadzone.getDouble(.02))
+        {
+            m_intake.set(triggerRight);
+        }
+        else
+        {
+            m_intake.set(0);
+        }
     }
 
     /**

@@ -46,6 +46,9 @@ public class Robot extends TimedRobot {
   // Create Lift Motor
   //CANSparkMax m_lift;
 
+  // Create Intake Motor
+  Talon m_intake;
+
   // Create Compressor and Solenoids
   Compressor m_compressor;
   Solenoid m_hatcher;
@@ -67,13 +70,13 @@ public class Robot extends TimedRobot {
 
     m_joystickLeft = new Joystick(0);
     m_joystickRight = new Joystick(1);
-    m_gamepad = new Joystick(3);
+    m_gamepad = new Joystick(2);
 
     // Initialize Drive Motors
-    m_leftFront = new TalonSRX(2);
-    m_rightFront = new TalonSRX(1);
-    m_leftBack = new VictorSPX(3);
-    m_rightBack = new VictorSPX(4);
+    m_leftFront = new TalonSRX(7);
+    m_rightFront = new TalonSRX(9);
+    m_leftBack = new VictorSPX(6);
+    m_rightBack = new VictorSPX(8);
 
     // Initialize Climb Motors
     m_climbFront = new Talon(2);
@@ -81,7 +84,10 @@ public class Robot extends TimedRobot {
     m_climbDrive = new Talon(1);
 
     // Initialize Lift Motor
-    //m_lift = new CANSparkMax(7, MotorType.kBrushed);
+    //m_lift = new CANSparkMax(4, MotorType.kBrushed);
+
+    //Initialize Intake Motor
+    m_intake = new Talon(3);
 
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
@@ -96,7 +102,7 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_hatcher, .02);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_intake, m_hatcher, .02);
     m_pixy = new PixyLineFollow();
     m_camera = new Camera();
 
@@ -149,6 +155,8 @@ public class Robot extends TimedRobot {
     {
       // Run Lift Subsystem
       m_subSystems.lift(m_gamepad.getRawAxis(1));
+      // Run Intake Subsystem
+      m_subSystems.intake(m_gamepad.getRawAxis(3), m_gamepad.getRawAxis(4));
       // Run Hatcher Subsystem
       m_subSystems.hatcher(m_gamepad.getRawButton(1));
     }
