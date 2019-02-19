@@ -67,7 +67,7 @@ public class SubSystems {
      * @param joystickRightY The right joystick value
      * @param joystickDriveY The drive joystick value
      */
-    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY)
+    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY, boolean joystickButton)
     {
         // Impliment Deadzone
         if(joystickLeftY < m_deadzone.getDouble(.02) && joystickLeftY > -m_deadzone.getDouble(.02))
@@ -88,10 +88,20 @@ public class SubSystems {
         double updatedRight = joystickRightY * Math.abs(joystickRightY);
         double updatedDrive = joystickDriveY * Math.abs(joystickDriveY);
 
-        // Set front values
-        m_climbFront.set(updatedLeft);
-        // Set back values
-        m_climbBack.set(updatedRight);
+        if(joystickButton)
+        {
+            // Set front values
+            m_climbFront.set(updatedLeft);
+            // Set back values
+            m_climbBack.set(updatedLeft);
+        }
+        else
+        {
+            // Set front values
+            m_climbFront.set(updatedLeft);
+            // Set back values
+            m_climbBack.set(updatedRight);
+        }
         // Set drive values
         m_climbDrive.set(updatedDrive);
     }

@@ -155,7 +155,7 @@ public class Robot extends TimedRobot {
     if(m_gamepad.getRawButton(5))
     {
       // Run Climber Subsystem
-      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3));
+      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1));
     }
     else
     {
