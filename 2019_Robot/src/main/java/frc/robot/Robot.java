@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -44,7 +45,7 @@ public class Robot extends TimedRobot {
   Talon m_climbDrive;
 
   // Create Lift Motor
-  //CANSparkMax m_lift;
+  Spark m_lift;
 
   // Create Intake Motor
   Talon m_intake;
@@ -86,7 +87,7 @@ public class Robot extends TimedRobot {
     m_climbDrive = new Talon(1);
 
     // Initialize Lift Motor
-    //m_lift = new CANSparkMax(4, MotorType.kBrushed);
+    m_lift = new Spark(4);
 
     //Initialize Intake Motor
     m_intake = new Talon(3);
@@ -106,7 +107,7 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, /*m_lift,*/ m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02);
     //m_pixy = new PixyLineFollow();
     m_camera = new Camera();
 

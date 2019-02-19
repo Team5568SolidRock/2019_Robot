@@ -8,11 +8,10 @@
 package frc.robot.classes;
 
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-
-//import com.revrobotics.CANSparkMax;
 
 /**
  * This class runs the subsystems for the 2019 game robot.
@@ -24,8 +23,8 @@ public class SubSystems {
     private Talon m_climbBack;
     private Talon m_climbDrive;
 
-    // Create Spark Max Speed Controller
-    //private CANSparkMax m_lift;
+    // Create Spark Speed Controller
+    private Spark m_lift;
 
     // Create Talon Intake Controller
     private Talon m_intake;
@@ -48,12 +47,12 @@ public class SubSystems {
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
         m_climbDrive = ClimbDrive;
-        //m_lift = Lift;
+        m_lift = Lift;
         m_intake = Intake;
         m_hatcher = Hatcher;
         m_hatcherDrop = HatcherDrop;
@@ -113,7 +112,7 @@ public class SubSystems {
         double updatedY = joystickY * Math.abs(joystickY);
 
         // Set motor value
-        //m_lift.set(updatedY);
+        m_lift.set(updatedY);
     }
 
 
