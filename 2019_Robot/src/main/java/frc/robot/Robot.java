@@ -156,6 +156,11 @@ public class Robot extends TimedRobot {
     {
       // Run Climber Subsystem
       m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1));
+
+      // Zero Other Motors
+      m_subSystems.liftZero();
+      m_subSystems.intakeZero();
+      m_subSystems.hatcherZero();
     }
     else
     {
@@ -165,6 +170,9 @@ public class Robot extends TimedRobot {
       m_subSystems.intake(m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3));
       // Run Hatcher Subsystem
       m_subSystems.hatcher(m_gamepad.getRawButton(1), m_gamepad.getRawButton(2), m_gamepad.getRawButton(3));
+
+      // Zero Other Motors
+      m_subSystems.climbZero();
     }
 
   }

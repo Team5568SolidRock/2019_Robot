@@ -125,7 +125,6 @@ public class SubSystems {
         m_lift.set(updatedY);
     }
 
-
     /**
      * Runs the intake motor
      * @param trigerLeft The trigger to intake
@@ -157,5 +156,41 @@ public class SubSystems {
       m_hatcher.set(buttonKick);
       m_hatcherDrop.set(buttonDrop);
       m_hatcherLift.set(buttonLift);
+    }
+
+    /**
+     * Zeros all climb motors
+     */
+    public void climbZero()
+    {
+    m_climbFront.set(0);
+    m_climbBack.set(0);
+    m_climbDrive.set(0);
+    }
+
+    /**
+     * Zeros all lift motors
+     */
+    public void liftZero()
+    {
+        m_lift.set(0);
+    }
+
+    /**
+     * Zeros intake motor
+     */
+    public void intakeZero()
+    {
+        m_intake.set(0);
+    }
+
+    /**
+     * Zeros all hatcher solenoids
+     */
+    public void hatcherZero()
+    {
+        m_hatcher.set(false);
+        m_hatcherDrop.set(false);
+        m_hatcherLift.set(false);
     }
 }
