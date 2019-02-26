@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 
 /**
  * This class runs the subsystems for the 2019 game robot.
@@ -37,6 +38,7 @@ public class SubSystems {
     // Create Configurable Values
     public NetworkTableEntry m_deadzone;
     public NetworkTableEntry m_climbOffset;
+    public NetworkTableEntry m_encoderValue;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -59,8 +61,9 @@ public class SubSystems {
         m_hatcherDrop = HatcherDrop;
         m_hatcherLift = HatcherLift;
 
-        m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
-        m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget("Number Slider").withPosition(2, 4).withSize(2, 1).getEntry();
+        m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 1).withSize(2, 1).getEntry();
+        m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 2).withSize(2, 1).getEntry();
+        m_encoderValue = Shuffleboard.getTab("SubSystems").add("Encoder Value", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 4).withSize(2, 3).getEntry();
     }
 
     /**
@@ -112,7 +115,7 @@ public class SubSystems {
      * Runs the lift motors
      * @param joystickY The lift joystick value
      */
-    public void lift(double joystickY)
+    public void lift(double joystickY, double encoderValue)
     {
         // Impliment Deadzone
         if(joystickY < m_deadzone.getDouble(.02) && joystickY > -m_deadzone.getDouble(.02))
@@ -125,6 +128,8 @@ public class SubSystems {
 
         // Set motor value
         m_lift.set(updatedY);
+
+        m_encoderValue.setDouble(encoderValue);
     }
 
     /**

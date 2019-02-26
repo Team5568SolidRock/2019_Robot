@@ -168,7 +168,7 @@ public class Robot extends TimedRobot {
     else
     {
       // Run Lift Subsystem
-      m_subSystems.lift(m_gamepad.getRawAxis(1));
+      m_subSystems.lift(m_gamepad.getRawAxis(1), m_leftFront.getSelectedSensorPosition());
       // Run Intake Subsystem
       m_subSystems.intake(m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3));
       // Run Hatcher Subsystem

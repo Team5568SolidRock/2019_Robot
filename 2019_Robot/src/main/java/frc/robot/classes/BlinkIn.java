@@ -22,12 +22,20 @@ public class BlinkIn {
     //Create Configurable Values
     public NetworkTableEntry m_PwmOutput;
 
+    /**
+     * Initializes the BlinkIn controller and base settings.
+     * @param blinkIn The Spark that the BlinkIn is on.
+     * @param defaultPwmOutput The default lighting code for the BlinkIn
+     */
     public BlinkIn(Spark blinkIn, double defaultPwmOutput)
     {
         BlinkIn = blinkIn;
-        m_PwmOutput = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultPwmOutput).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
+        m_PwmOutput = Shuffleboard.getTab("SubSystems").add("BlinkIn PWM Output", defaultPwmOutput).withWidget("Number Slider").withPosition(2, 1).withSize(2, 1).getEntry();
     }
 
+    /**
+     * Updates the BlinkIn each loop.
+     */
     public void update()
     {
         BlinkIn.set(m_PwmOutput.getDouble(0));
