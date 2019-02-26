@@ -103,8 +103,8 @@ public class Robot extends TimedRobot {
     m_blinkInController = new Spark(5);
 
     // Configure Drive
-    m_rightFront.setInverted(true);
-    m_rightBack.setInverted(true);
+    m_leftFront.setInverted(true);
+    m_leftBack.setInverted(true);
     m_leftBack.follow(m_leftFront);
     m_rightBack.follow(m_rightFront);
 
@@ -113,8 +113,7 @@ public class Robot extends TimedRobot {
     m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02, 0);
     //m_pixy = new PixyLineFollow();
     m_camera = new Camera();
-    m_blinkIn = new BlinkIn(m_blinkInController);
-
+    m_blinkIn = new BlinkIn(m_blinkInController, -.99);
   }
 
   /**
@@ -178,6 +177,9 @@ public class Robot extends TimedRobot {
       // Zero Other Motors
       m_subSystems.climbZero();
     }
+
+    //Run BlinkIn
+    m_blinkIn.update();
 
   }
 

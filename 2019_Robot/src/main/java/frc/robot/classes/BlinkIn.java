@@ -8,16 +8,28 @@
 package frc.robot.classes;
 
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 /**
  * This class controls the Blinkin Lights
  */
 public class BlinkIn {
 
+    //Create BlinkIn Spark
     Spark BlinkIn;
-    public BlinkIn(Spark blinkIn)
+
+    //Create Configurable Values
+    public NetworkTableEntry m_PwmOutput;
+
+    public BlinkIn(Spark blinkIn, double defaultPwmOutput)
     {
         BlinkIn = blinkIn;
-        BlinkIn.set(-0.93);
+        m_PwmOutput = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultPwmOutput).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
+    }
+
+    public void update()
+    {
+        BlinkIn.set(m_PwmOutput.getDouble(0));
     }
 }
