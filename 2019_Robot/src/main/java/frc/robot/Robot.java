@@ -17,14 +17,11 @@ import edu.wpi.first.wpilibj.Solenoid;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-//import com.revrobotics.CANSparkMax;
-//import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import frc.robot.classes.TankDrive;
 import frc.robot.classes.PixyLineFollow;
 import frc.robot.classes.SubSystems;
+import frc.robot.classes.BlinkIn;
 import frc.robot.classes.Camera;
-
 
 public class Robot extends TimedRobot {
 
@@ -56,11 +53,15 @@ public class Robot extends TimedRobot {
   Solenoid m_hatcherDrop;
   Solenoid m_hatcherLift;
 
+  // Create BlinkIn Spark
+  Spark m_blinkInController;
+
   //Create Custom Classes
   TankDrive m_drive;
   SubSystems m_subSystems;
   //PixyLineFollow m_pixy;
   Camera m_camera;
+  BlinkIn m_blinkIn;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -89,7 +90,7 @@ public class Robot extends TimedRobot {
     // Initialize Lift Motor
     m_lift = new Spark(4);
 
-    //Initialize Intake Motor
+    // Initialize Intake Motor
     m_intake = new Talon(3);
 
     // Initialize Compressor and Solenoids
@@ -98,8 +99,10 @@ public class Robot extends TimedRobot {
     m_hatcherDrop = new Solenoid(2);
     m_hatcherLift = new Solenoid(3);
 
-    // Configure Drive
+    // Initialize BlinkIn Spark
+    m_blinkInController = new Spark(5);
 
+    // Configure Drive
     m_rightFront.setInverted(true);
     m_rightBack.setInverted(true);
     m_leftBack.follow(m_leftFront);
@@ -110,6 +113,7 @@ public class Robot extends TimedRobot {
     m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02);
     //m_pixy = new PixyLineFollow();
     m_camera = new Camera();
+    m_blinkIn = new BlinkIn(m_blinkInController);
 
   }
 
