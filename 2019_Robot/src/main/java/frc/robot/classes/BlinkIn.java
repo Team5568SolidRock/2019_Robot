@@ -30,7 +30,7 @@ public class BlinkIn {
     public BlinkIn(Spark blinkIn, double defaultPwmOutput)
     {
         BlinkIn = blinkIn;
-        m_PwmOutput = Shuffleboard.getTab("SubSystems").add("BlinkIn PWM Output", defaultPwmOutput).withWidget("Number Slider").withPosition(2, 1).withSize(2, 1).getEntry();
+        m_PwmOutput = Shuffleboard.getTab("BlinkIn").add("BlinkIn PWM Output", defaultPwmOutput).withWidget("Number Slider").withPosition(2, 1).withSize(2, 1).getEntry();
     }
 
     /**
