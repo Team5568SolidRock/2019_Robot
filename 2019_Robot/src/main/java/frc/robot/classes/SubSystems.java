@@ -36,6 +36,7 @@ public class SubSystems {
 
     // Create Configurable Values
     public NetworkTableEntry m_deadzone;
+    public NetworkTableEntry m_climbOffset;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -47,7 +48,7 @@ public class SubSystems {
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone, double defaultClimbOffset)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
@@ -59,6 +60,7 @@ public class SubSystems {
         m_hatcherLift = HatcherLift;
 
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
+        m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget("Number Slider").withPosition(2, 4).withSize(2, 1).getEntry();
     }
 
     /**
@@ -91,7 +93,7 @@ public class SubSystems {
         if(joystickButton)
         {
             // Set front values
-            m_climbFront.set(updatedLeft);
+            m_climbFront.set(updatedLeft * m_climbOffset.getDouble(0));
             // Set back values
             m_climbBack.set(updatedLeft);
         }
