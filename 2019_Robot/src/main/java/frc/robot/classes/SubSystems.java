@@ -8,11 +8,11 @@
 package frc.robot.classes;
 
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-
-//import com.revrobotics.CANSparkMax;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 
 /**
  * This class runs the subsystems for the 2019 game robot.
@@ -24,14 +24,29 @@ public class SubSystems {
     private Talon m_climbBack;
     private Talon m_climbDrive;
 
-    // Create Spark Max Speed Controller
-    //private CANSparkMax m_lift;
+    // Create Spark Speed Controller
+    private Spark m_lift;
+
+    // Create Talon Intake Controller
+    private Talon m_intake;
 
     // Create Solenoid
     private Solenoid m_hatcher;
+    private Solenoid m_hatcherDrop;
+    private Solenoid m_hatcherLift;
 
     // Create Configurable Values
     public NetworkTableEntry m_deadzone;
+    public NetworkTableEntry m_climbOffset;
+    public NetworkTableEntry m_encoderValue;
+    public NetworkTableEntry m_encoderScale;
+    public NetworkTableEntry m_encoderHeight;
+    public NetworkTableEntry m_bottomLimitSwitch;
+    public NetworkTableEntry m_topLimitSwitch;
+    public NetworkTableEntry m_leftBottomLimitSwitch;
+    public NetworkTableEntry m_leftTopLimitSwitch;
+    public NetworkTableEntry m_rightBottomLimitSwitch;
+    public NetworkTableEntry m_rightTopLimitSwitch;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -39,18 +54,34 @@ public class SubSystems {
      * @param ClimbBack The motor for the Talon back climber
      * @param ClimbDrive The Talon drive motor on the climber
      * @param Lift The CANSparkMax Lift Motor
+     * @param Intake The intake motor
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
+     * @param defaultClimbOffset The default offset for the front climb bar
+     * @param defaultEncoderScale The default encoder scaling value to inches.
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, /*CANSparkMax Lift,*/ Solenoid Hatcher, double defaultDeadzone)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone, double defaultClimbOffset, double defaultEncoderScale)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
         m_climbDrive = ClimbDrive;
-        //m_lift = Lift;
+        m_lift = Lift;
+        m_intake = Intake;
         m_hatcher = Hatcher;
+        m_hatcherDrop = HatcherDrop;
+        m_hatcherLift = HatcherLift;
 
-        m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget("Number Slider").withPosition(2, 2).withSize(2, 1).getEntry();
+        m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 1).withSize(2, 1).getEntry();
+        m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 2).withSize(2, 1).getEntry();
+        m_encoderValue = Shuffleboard.getTab("SubSystems").add("Encoder Value", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 4).withSize(2, 3).getEntry();
+        m_encoderScale = Shuffleboard.getTab("SubSystems").add("Encoder Scale", defaultEncoderScale).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 5).withSize(2, 3).getEntry();
+        m_encoderHeight = Shuffleboard.getTab("SubSystems").add("Encoder Height", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_bottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_topLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_leftBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_leftTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_rightBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_rightTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
     }
 
     /**
@@ -58,8 +89,13 @@ public class SubSystems {
      * @param joystickLeftY The left joystick value
      * @param joystickRightY The right joystick value
      * @param joystickDriveY The drive joystick value
+     * @param joystickButton The button to sync front and back
+     * @param leftBottomLimitSwitch Left Bottom Limit Switch
+     * @param leftTopLimitSwitch Left Top Limit Switch
+     * @param rightBottomLimitSwitch Right Bottom Limit Switch
+     * @param rightTopLimitSwitch Right Top Limit Switch
      */
-    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY)
+    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY, boolean joystickButton, boolean leftBottomLimitSwitch, boolean leftTopLimitSwitch, boolean rightBottomLimitSwitch, boolean rightTopLimitSwitch)
     {
         // Impliment Deadzone
         if(joystickLeftY < m_deadzone.getDouble(.02) && joystickLeftY > -m_deadzone.getDouble(.02))
@@ -80,19 +116,49 @@ public class SubSystems {
         double updatedRight = joystickRightY * Math.abs(joystickRightY);
         double updatedDrive = joystickDriveY * Math.abs(joystickDriveY);
 
-        // Set front values
-        m_climbFront.set(updatedLeft);
-        // Set back values
-        m_climbBack.set(updatedRight);
+        // Limit Switches
+        if(updatedLeft > 0 && (leftBottomLimitSwitch || rightBottomLimitSwitch))
+        {
+            updatedLeft = 0;
+        }
+        if(updatedLeft < 0 && (leftTopLimitSwitch || rightTopLimitSwitch))
+        {
+            updatedRight = 0;
+        }
+        
+        if(joystickButton)
+        {
+            // Set front values
+            m_climbFront.set(updatedLeft * m_climbOffset.getDouble(0));
+            // Set back values
+            m_climbBack.set(updatedLeft);
+        }
+        else
+        {
+            // Set front values
+            m_climbFront.set(updatedLeft);
+            // Set back values
+            m_climbBack.set(updatedRight);
+        }
+
         // Set drive values
         m_climbDrive.set(updatedDrive);
+
+        // Update Smartdashboard
+        m_leftBottomLimitSwitch.setBoolean(leftBottomLimitSwitch);
+        m_leftTopLimitSwitch.setBoolean(leftTopLimitSwitch);
+        m_rightBottomLimitSwitch.setBoolean(rightBottomLimitSwitch);
+        m_rightTopLimitSwitch.setBoolean(rightTopLimitSwitch);
     }
 
     /**
      * Runs the lift motors
      * @param joystickY The lift joystick value
+     * @param encoderValue The lift current lift encoder value without scaling
+     * @param liftLimitSwitchBottom Is the bottom limit switch active?
+     * @param liftLimitSwitchTop Is the top limit switch active?
      */
-    public void lift(double joystickY)
+    public void lift(double joystickY, double encoderValue, boolean liftLimitSwitchBottom, boolean liftLimitSwitchTop)
     {
         // Impliment Deadzone
         if(joystickY < m_deadzone.getDouble(.02) && joystickY > -m_deadzone.getDouble(.02))
@@ -103,16 +169,92 @@ public class SubSystems {
         // Square joystick values
         double updatedY = joystickY * Math.abs(joystickY);
 
+        // Check bottom limit
+        if(updatedY > 0 && liftLimitSwitchBottom)
+        {
+            updatedY = 0;
+        }
+
+        if(updatedY < 0 && liftLimitSwitchTop)
+        {
+            updatedY = 0;
+        }
+
         // Set motor value
-        //m_lift.set(updatedY);
+        m_lift.set(updatedY);
+
+        m_encoderValue.setDouble(encoderValue);
+        m_encoderHeight.setDouble(encoderValue/m_encoderScale.getDouble(1));
+        m_bottomLimitSwitch.setBoolean(liftLimitSwitchBottom);
+        m_topLimitSwitch.setBoolean(liftLimitSwitchTop);
+    }
+
+    /**
+     * Runs the intake motor
+     * @param trigerLeft The trigger to intake
+     * @param triggerRight The trigger to output
+     */
+    public void intake(double triggerLeft, double triggerRight)
+    {
+        if(triggerLeft > m_deadzone.getDouble(.02))
+        {
+            m_intake.set(-triggerLeft);
+        }
+        else if(triggerRight > m_deadzone.getDouble(.02))
+        {
+            m_intake.set(triggerRight);
+        }
+        else
+        {
+            m_intake.set(0);
+        }
     }
 
     /**
      * Runs the hatcher solenoid
-     * @param button The button to activate the solenoid
+     * @param buttonKick The button to activate the kicker solenoid
+     * @param button
      */
-    public void hatcher(Boolean button)
+    public void hatcher(Boolean buttonKick, Boolean buttonDrop, Boolean buttonLift)
     {
-      m_hatcher.set(button);
+      m_hatcher.set(buttonKick);
+      m_hatcherDrop.set(buttonDrop);
+      m_hatcherLift.set(buttonLift);
+    }
+
+    /**
+     * Zeros all climb motors
+     */
+    public void climbZero()
+    {
+    m_climbFront.set(0);
+    m_climbBack.set(0);
+    m_climbDrive.set(0);
+    }
+
+    /**
+     * Zeros all lift motors
+     */
+    public void liftZero()
+    {
+        m_lift.set(0);
+    }
+
+    /**
+     * Zeros intake motor
+     */
+    public void intakeZero()
+    {
+        m_intake.set(0);
+    }
+
+    /**
+     * Zeros all hatcher solenoids
+     */
+    public void hatcherZero()
+    {
+        m_hatcher.set(false);
+        m_hatcherDrop.set(false);
+        m_hatcherLift.set(false);
     }
 }
