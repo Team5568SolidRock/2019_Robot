@@ -54,6 +54,20 @@ Hatcher:
 
 -Solenoid Kicker: Solenoid 0
 
+Encoders:
+
+-Climb Left Top: DIO 0
+
+-Climb Left Bottom: DIO 1
+
+-Climb Right Bottom: DIO 2
+
+-Climb Right Top: DIO 3
+
+-Lift Bottom: DIO 4
+
+-Lift Top: DIO 5
+
 # Joystick Configuration
 Drive:
 
