@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -55,6 +56,14 @@ public class Robot extends TimedRobot {
 
   // Create BlinkIn Spark
   Spark m_blinkInController;
+
+  // Creat Limit Switches
+  DigitalInput m_liftLimitBottom;
+  DigitalInput m_liftLimitTop;
+  DigitalInput m_climbLeftBottom;
+  DigitalInput m_climbLeftTop;
+  DigitalInput m_climbRightBottom;
+  DigitalInput m_climbRightTop;
 
   //Create Custom Classes
   TankDrive m_drive;
@@ -102,6 +111,15 @@ public class Robot extends TimedRobot {
     // Initialize BlinkIn Spark
     m_blinkInController = new Spark(5);
 
+    // Initialize Limit Switches
+    m_liftLimitBottom = new DigitalInput(4);
+    m_liftLimitTop = new DigitalInput(5);
+    m_climbLeftBottom = new DigitalInput(1);
+    m_climbLeftTop = new DigitalInput(0);
+    m_climbRightBottom = new DigitalInput(2);
+    m_climbRightTop = new DigitalInput(1);
+
+
     // Configure Drive
     m_leftFront.setInverted(true);
     m_leftBack.setInverted(true);
@@ -110,9 +128,9 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02, 0);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02, 0, 1);
     //m_pixy = new PixyLineFollow();
-    m_camera = new Camera();
+    m_camera = new Camera(false);
     m_blinkIn = new BlinkIn(m_blinkInController, -.99);
   }
 
@@ -158,7 +176,7 @@ public class Robot extends TimedRobot {
     if(m_gamepad.getRawButton(5))
     {
       // Run Climber Subsystem
-      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1));
+      m_subSystems.climber(m_gamepad.getRawAxis(1), m_gamepad.getRawAxis(5), m_gamepad.getRawAxis(3), m_gamepad.getRawButton(1), m_climbLeftBottom.get(), m_climbLeftTop.get(), m_climbRightBottom.get(), m_climbRightTop.get());
 
       // Zero Other Motors
       m_subSystems.liftZero();
@@ -168,7 +186,7 @@ public class Robot extends TimedRobot {
     else
     {
       // Run Lift Subsystem
-      m_subSystems.lift(m_gamepad.getRawAxis(1), m_leftFront.getSelectedSensorPosition());
+      m_subSystems.lift(m_gamepad.getRawAxis(1), m_leftFront.getSelectedSensorPosition(), m_liftLimitBottom.get(), m_liftLimitTop.get());
       // Run Intake Subsystem
       m_subSystems.intake(m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3));
       // Run Hatcher Subsystem

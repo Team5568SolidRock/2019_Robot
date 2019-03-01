@@ -39,6 +39,14 @@ public class SubSystems {
     public NetworkTableEntry m_deadzone;
     public NetworkTableEntry m_climbOffset;
     public NetworkTableEntry m_encoderValue;
+    public NetworkTableEntry m_encoderScale;
+    public NetworkTableEntry m_encoderHeight;
+    public NetworkTableEntry m_bottomLimitSwitch;
+    public NetworkTableEntry m_topLimitSwitch;
+    public NetworkTableEntry m_leftBottomLimitSwitch;
+    public NetworkTableEntry m_leftTopLimitSwitch;
+    public NetworkTableEntry m_rightBottomLimitSwitch;
+    public NetworkTableEntry m_rightTopLimitSwitch;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -49,8 +57,10 @@ public class SubSystems {
      * @param Intake The intake motor
      * @param Hatcher The solenoid for the Hatcher system
      * @param defaultDeadzone The default for Switchboard deadzone value
+     * @param defaultClimbOffset The default offset for the front climb bar
+     * @param defaultEncoderScale The default encoder scaling value to inches.
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone, double defaultClimbOffset)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone, double defaultClimbOffset, double defaultEncoderScale)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
@@ -64,6 +74,14 @@ public class SubSystems {
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 1).withSize(2, 1).getEntry();
         m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 2).withSize(2, 1).getEntry();
         m_encoderValue = Shuffleboard.getTab("SubSystems").add("Encoder Value", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 4).withSize(2, 3).getEntry();
+        m_encoderScale = Shuffleboard.getTab("SubSystems").add("Encoder Scale", defaultEncoderScale).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 5).withSize(2, 3).getEntry();
+        m_encoderHeight = Shuffleboard.getTab("SubSystems").add("Encoder Height", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_bottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_topLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_leftBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_leftTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_rightBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_rightTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
     }
 
     /**
@@ -71,8 +89,13 @@ public class SubSystems {
      * @param joystickLeftY The left joystick value
      * @param joystickRightY The right joystick value
      * @param joystickDriveY The drive joystick value
+     * @param joystickButton The button to sync front and back
+     * @param leftBottomLimitSwitch Left Bottom Limit Switch
+     * @param leftTopLimitSwitch Left Top Limit Switch
+     * @param rightBottomLimitSwitch Right Bottom Limit Switch
+     * @param rightTopLimitSwitch Right Top Limit Switch
      */
-    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY, boolean joystickButton)
+    public void climber(double joystickLeftY, double joystickRightY, double joystickDriveY, boolean joystickButton, boolean leftBottomLimitSwitch, boolean leftTopLimitSwitch, boolean rightBottomLimitSwitch, boolean rightTopLimitSwitch)
     {
         // Impliment Deadzone
         if(joystickLeftY < m_deadzone.getDouble(.02) && joystickLeftY > -m_deadzone.getDouble(.02))
@@ -93,6 +116,16 @@ public class SubSystems {
         double updatedRight = joystickRightY * Math.abs(joystickRightY);
         double updatedDrive = joystickDriveY * Math.abs(joystickDriveY);
 
+        // Limit Switches
+        if(updatedLeft > 0 && (leftBottomLimitSwitch || rightBottomLimitSwitch))
+        {
+            updatedLeft = 0;
+        }
+        if(updatedLeft < 0 && (leftTopLimitSwitch || rightTopLimitSwitch))
+        {
+            updatedRight = 0;
+        }
+        
         if(joystickButton)
         {
             // Set front values
@@ -107,15 +140,25 @@ public class SubSystems {
             // Set back values
             m_climbBack.set(updatedRight);
         }
+
         // Set drive values
         m_climbDrive.set(updatedDrive);
+
+        // Update Smartdashboard
+        m_leftBottomLimitSwitch.setBoolean(leftBottomLimitSwitch);
+        m_leftTopLimitSwitch.setBoolean(leftTopLimitSwitch);
+        m_rightBottomLimitSwitch.setBoolean(rightBottomLimitSwitch);
+        m_rightTopLimitSwitch.setBoolean(rightTopLimitSwitch);
     }
 
     /**
      * Runs the lift motors
      * @param joystickY The lift joystick value
+     * @param encoderValue The lift current lift encoder value without scaling
+     * @param liftLimitSwitchBottom Is the bottom limit switch active?
+     * @param liftLimitSwitchTop Is the top limit switch active?
      */
-    public void lift(double joystickY, double encoderValue)
+    public void lift(double joystickY, double encoderValue, boolean liftLimitSwitchBottom, boolean liftLimitSwitchTop)
     {
         // Impliment Deadzone
         if(joystickY < m_deadzone.getDouble(.02) && joystickY > -m_deadzone.getDouble(.02))
@@ -126,10 +169,24 @@ public class SubSystems {
         // Square joystick values
         double updatedY = joystickY * Math.abs(joystickY);
 
+        // Check bottom limit
+        if(updatedY > 0 && liftLimitSwitchBottom)
+        {
+            updatedY = 0;
+        }
+
+        if(updatedY < 0 && liftLimitSwitchTop)
+        {
+            updatedY = 0;
+        }
+
         // Set motor value
         m_lift.set(updatedY);
 
         m_encoderValue.setDouble(encoderValue);
+        m_encoderHeight.setDouble(encoderValue/m_encoderScale.getDouble(1));
+        m_bottomLimitSwitch.setBoolean(liftLimitSwitchBottom);
+        m_topLimitSwitch.setBoolean(liftLimitSwitchTop);
     }
 
     /**

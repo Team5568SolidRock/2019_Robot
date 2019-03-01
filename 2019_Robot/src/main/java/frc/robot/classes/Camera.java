@@ -16,6 +16,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 public class Camera {
     // Create Camera
     UsbCamera m_camera;
+    UsbCamera m_cameraTwo;
 
     /**
      * Initializes a USB Camera
@@ -24,5 +25,21 @@ public class Camera {
     {
         // Initialize CameraServer
         CameraServer.getInstance().startAutomaticCapture();
+    }
+
+    /**
+     * Initializes a USB Cameras
+     * @param secondCamera Boolean determining whether there is a second camera
+     */
+    public Camera(boolean secondCamera)
+    {
+        // Initialize CameraServer
+        CameraServer.getInstance().startAutomaticCapture();
+
+        if(secondCamera)
+        {
+            // Initialize Second CameraServer
+            CameraServer.getInstance().startAutomaticCapture();
+        }
     }
 }
