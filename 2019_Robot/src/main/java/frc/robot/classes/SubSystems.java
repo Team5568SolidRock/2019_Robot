@@ -31,9 +31,9 @@ public class SubSystems {
     private Talon m_intake;
 
     // Create Solenoid
-    private Solenoid m_hatcher;
-    private Solenoid m_hatcherDrop;
-    private Solenoid m_hatcherLift;
+    private Solenoid m_hatcherGround;
+    private Solenoid m_hatcherExtend;
+    private Solenoid m_hatcherExpand;
 
     // Create Configurable Values
     public NetworkTableEntry m_deadzone;
@@ -60,16 +60,16 @@ public class SubSystems {
      * @param defaultClimbOffset The default offset for the front climb bar
      * @param defaultEncoderScale The default encoder scaling value to inches.
      */
-    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid Hatcher, Solenoid HatcherDrop, Solenoid HatcherLift, double defaultDeadzone, double defaultClimbOffset, double defaultEncoderScale)
+    public SubSystems(Talon ClimbFront, Talon ClimbBack, Talon ClimbDrive, Spark Lift, Talon Intake, Solenoid HatcherGround, Solenoid HatcherExtend, Solenoid HatcherExpand, double defaultDeadzone, double defaultClimbOffset, double defaultEncoderScale)
     {
         m_climbFront = ClimbFront;
         m_climbBack = ClimbBack;
         m_climbDrive = ClimbDrive;
         m_lift = Lift;
         m_intake = Intake;
-        m_hatcher = Hatcher;
-        m_hatcherDrop = HatcherDrop;
-        m_hatcherLift = HatcherLift;
+        m_hatcherGround = HatcherGround;
+        m_hatcherExpand = HatcherExpand;
+        m_hatcherExtend = HatcherExtend;
 
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 1).withSize(2, 1).getEntry();
         m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 2).withSize(2, 1).getEntry();
@@ -198,11 +198,11 @@ public class SubSystems {
     {
         if(triggerLeft > m_deadzone.getDouble(.02))
         {
-            m_intake.set(-triggerLeft);
+            m_intake.set(triggerLeft);
         }
         else if(triggerRight > m_deadzone.getDouble(.02))
         {
-            m_intake.set(triggerRight);
+            m_intake.set(-triggerRight);
         }
         else
         {
@@ -212,14 +212,15 @@ public class SubSystems {
 
     /**
      * Runs the hatcher solenoid
-     * @param buttonKick The button to activate the kicker solenoid
-     * @param button
+     * @param buttonGround The button to activate the ground intake solenoid
+     * @param buttonExtend The button to extend the intake solenoid
+     * @param buttonExpand The button to expand the intake solenoid
      */
-    public void hatcher(Boolean buttonKick, Boolean buttonDrop, Boolean buttonLift)
+    public void hatcher(Boolean buttonGround, Boolean buttonExtend, Boolean buttonExpand)
     {
-      m_hatcher.set(buttonKick);
-      m_hatcherDrop.set(buttonDrop);
-      m_hatcherLift.set(buttonLift);
+      m_hatcherGround.set(!buttonGround);
+      m_hatcherExtend.set(buttonExtend);
+      m_hatcherExpand.set(buttonExpand);
     }
 
     /**
@@ -253,8 +254,8 @@ public class SubSystems {
      */
     public void hatcherZero()
     {
-        m_hatcher.set(false);
-        m_hatcherDrop.set(false);
-        m_hatcherLift.set(false);
+        m_hatcherGround.set(false);
+        m_hatcherExtend.set(false);
+        m_hatcherExpand.set(false);
     }
 }

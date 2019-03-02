@@ -19,7 +19,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import frc.robot.classes.TankDrive;
-import frc.robot.classes.PixyLineFollow;
+//import frc.robot.classes.PixyLineFollow;
 import frc.robot.classes.SubSystems;
 import frc.robot.classes.BlinkIn;
 import frc.robot.classes.Camera;
@@ -50,9 +50,9 @@ public class Robot extends TimedRobot {
 
   // Create Compressor and Solenoids
   Compressor m_compressor;
-  Solenoid m_hatcher;
-  Solenoid m_hatcherDrop;
-  Solenoid m_hatcherLift;
+  Solenoid m_hatcherGround;
+  Solenoid m_hatcherExtend;
+  Solenoid m_hatcherExpand;
 
   // Create BlinkIn Spark
   Spark m_blinkInController;
@@ -104,9 +104,9 @@ public class Robot extends TimedRobot {
 
     // Initialize Compressor and Solenoids
     m_compressor = new Compressor();
-    m_hatcher = new Solenoid(1);
-    m_hatcherDrop = new Solenoid(2);
-    m_hatcherLift = new Solenoid(3);
+    m_hatcherExpand = new Solenoid(1);
+    m_hatcherExtend = new Solenoid(2);
+    m_hatcherGround = new Solenoid(3);
 
     // Initialize BlinkIn Spark
     m_blinkInController = new Spark(5);
@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
     m_climbLeftBottom = new DigitalInput(1);
     m_climbLeftTop = new DigitalInput(0);
     m_climbRightBottom = new DigitalInput(2);
-    m_climbRightTop = new DigitalInput(1);
+    m_climbRightTop = new DigitalInput(3);
 
 
     // Configure Drive
@@ -128,7 +128,7 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcher, m_hatcherDrop, m_hatcherLift, .02, 0, 1);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcherGround, m_hatcherExtend, m_hatcherExpand, .02, 0, 1);
     //m_pixy = new PixyLineFollow();
     m_camera = new Camera(false);
     m_blinkIn = new BlinkIn(m_blinkInController, -.99);
@@ -190,7 +190,8 @@ public class Robot extends TimedRobot {
       // Run Intake Subsystem
       m_subSystems.intake(m_gamepad.getRawAxis(2), m_gamepad.getRawAxis(3));
       // Run Hatcher Subsystem
-      m_subSystems.hatcher(m_gamepad.getRawButton(1), m_gamepad.getRawButton(2), m_gamepad.getRawButton(3));
+      //.hatcher(Ground, Extend, Expand)
+      m_subSystems.hatcher(m_gamepad.getRawButton(1), m_gamepad.getRawButton(6), m_gamepad.getRawButton(3));
 
       // Zero Other Motors
       m_subSystems.climbZero();
