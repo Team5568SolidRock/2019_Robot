@@ -128,7 +128,7 @@ public class Robot extends TimedRobot {
 
     // Initialize Custom Classes
     m_drive = new TankDrive(m_leftFront, m_rightFront, .02);
-    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcherGround, m_hatcherExtend, m_hatcherExpand, .02, 0, 1);
+    m_subSystems = new SubSystems(m_climbFront, m_climbBack, m_climbDrive, m_lift, m_intake, m_hatcherGround, m_hatcherExtend, m_hatcherExpand, .02, 0, -613);
     //m_pixy = new PixyLineFollow();
     m_camera = new Camera(false);
     m_blinkIn = new BlinkIn(m_blinkInController, -.99);
