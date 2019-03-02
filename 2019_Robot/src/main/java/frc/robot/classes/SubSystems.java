@@ -10,6 +10,9 @@ package frc.robot.classes;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Solenoid;
+
+import org.junit.experimental.runners.Enclosed;
+
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -47,6 +50,9 @@ public class SubSystems {
     public NetworkTableEntry m_leftTopLimitSwitch;
     public NetworkTableEntry m_rightBottomLimitSwitch;
     public NetworkTableEntry m_rightTopLimitSwitch;
+    public NetworkTableEntry m_liftError;
+    public NetworkTableEntry m_liftTarget;
+    public NetworkTableEntry m_isAutoLift;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -70,6 +76,10 @@ public class SubSystems {
         m_hatcherGround = HatcherGround;
         m_hatcherExpand = HatcherExpand;
         m_hatcherExtend = HatcherExtend;
+
+        m_liftError.setDouble(0);
+        m_liftTarget.setDouble(0);
+        m_isAutoLift.setBoolean(false);
 
         m_deadzone = Shuffleboard.getTab("SubSystems").add("Joystick Deadzone", defaultDeadzone).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 1).withSize(2, 1).getEntry();
         m_climbOffset = Shuffleboard.getTab("SubSystems").add("Climb Offset", defaultClimbOffset).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 2).withSize(2, 1).getEntry();
@@ -154,11 +164,12 @@ public class SubSystems {
     /**
      * Runs the lift motors
      * @param joystickY The lift joystick value
+     * @param joystickPov The POV of the lift joystick
      * @param encoderValue The lift current lift encoder value without scaling
      * @param liftLimitSwitchBottom Is the bottom limit switch active?
      * @param liftLimitSwitchTop Is the top limit switch active?
      */
-    public void lift(double joystickY, double encoderValue, boolean liftLimitSwitchBottom, boolean liftLimitSwitchTop)
+    public void lift(double joystickY,int joystickPov, double encoderValue, boolean liftLimitSwitchBottom, boolean liftLimitSwitchTop)
     {
         // Impliment Deadzone
         if(joystickY < m_deadzone.getDouble(.02) && joystickY > -m_deadzone.getDouble(.02))
@@ -168,21 +179,53 @@ public class SubSystems {
 
         // Square joystick values
         double updatedY = joystickY * Math.abs(joystickY);
-
+        
         // Check bottom limit
         if(updatedY > 0 && liftLimitSwitchBottom)
         {
             updatedY = 0;
+            m_liftError.setDouble(0);
         }
 
+        // Check Top Limit
         if(updatedY < 0 && liftLimitSwitchTop)
         {
             updatedY = 0;
         }
 
-        // Set motor value
-        m_lift.set(updatedY);
+        // Check POV
+        if(joystickPov == 180)
+        {
+            m_liftTarget.setDouble(0);
+            m_isAutoLift.setBoolean(true);
+        }
 
+        // Calculate Error
+        if(m_isAutoLift.getBoolean(false) && updatedY != 0)
+        {
+            m_liftError.setDouble(m_liftTarget.getDouble(0));
+            if(m_liftError.getDouble(0) > 5)
+            {
+                m_lift.set(.5);
+            }
+            else if(m_liftError.getDouble(0) < -5)
+            {
+                m_lift.set(-.5);
+            }
+            else{
+                m_lift.set(m_liftError.getDouble(0) / 5);
+            }
+        }
+
+        // Run Lift
+        else
+        {
+            // Set motor value
+            m_lift.set(updatedY);
+            m_liftError.setDouble(0);
+        }
+
+        // Update Shuffleboard
         m_encoderValue.setDouble(encoderValue);
         m_encoderHeight.setDouble(encoderValue/m_encoderScale.getDouble(1));
         m_bottomLimitSwitch.setBoolean(liftLimitSwitchBottom);
