@@ -119,7 +119,6 @@ public class Robot extends TimedRobot {
     m_climbRightBottom = new DigitalInput(2);
     m_climbRightTop = new DigitalInput(3);
 
-
     // Configure Drive
     m_leftFront.setInverted(true);
     m_leftBack.setInverted(true);

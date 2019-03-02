@@ -47,6 +47,7 @@ public class SubSystems {
     public NetworkTableEntry m_leftTopLimitSwitch;
     public NetworkTableEntry m_rightBottomLimitSwitch;
     public NetworkTableEntry m_rightTopLimitSwitch;
+    public NetworkTableEntry m_liftBackdrive;
 
     /**
      * This initializes all of the motors and base settings for the robot subsystems
@@ -76,12 +77,13 @@ public class SubSystems {
         m_encoderValue = Shuffleboard.getTab("SubSystems").add("Encoder Value", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 4).withSize(2, 3).getEntry();
         m_encoderScale = Shuffleboard.getTab("SubSystems").add("Encoder Scale", defaultEncoderScale).withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 5).withSize(2, 3).getEntry();
         m_encoderHeight = Shuffleboard.getTab("SubSystems").add("Encoder Height", 0).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_bottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_topLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_leftBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_leftTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_rightBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
-        m_rightTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(2, 3).getEntry();
+        m_bottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 7).withSize(2, 3).getEntry();
+        m_topLimitSwitch = Shuffleboard.getTab("SubSystems").add("Lift Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 8).withSize(2, 3).getEntry();
+        m_leftBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 9).withSize(2, 3).getEntry();
+        m_leftTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Left Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 10).withSize(2, 3).getEntry();
+        m_rightBottomLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Bottom Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 11).withSize(2, 3).getEntry();
+        m_rightTopLimitSwitch = Shuffleboard.getTab("SubSystems").add("Climb Right Top Limit Switch", false).withWidget(BuiltInWidgets.kTextView).withPosition(2, 12).withSize(2, 3).getEntry();
+        m_liftBackdrive = Shuffleboard.getTab("SubSystems").add("Lift Backdrive", -.23).withWidget(BuiltInWidgets.kTextView).withPosition(2, 6).withSize(4, 1).getEntry();
     }
 
     /**
@@ -181,7 +183,7 @@ public class SubSystems {
         }
 
         // Set motor value
-        m_lift.set(updatedY);
+        m_lift.set(updatedY + m_liftBackdrive.getDouble(-.23));
 
         m_encoderValue.setDouble(encoderValue);
         m_encoderHeight.setDouble(encoderValue/m_encoderScale.getDouble(1));
@@ -254,7 +256,7 @@ public class SubSystems {
      */
     public void hatcherZero()
     {
-        m_hatcherGround.set(false);
+        m_hatcherGround.set(true);
         m_hatcherExtend.set(false);
         m_hatcherExpand.set(false);
     }
