@@ -103,8 +103,34 @@ Intake:
 
 Hatcher:
 
--Gamepad Button X (Button 3): Drop Hatcher
+-Gamepad Button A (Button 1): Lower Intake
 
--Gamepad Button Y (Button 4): Raise Lift
+-Gamepad Button X (Button 2): Open Hatch
 
--Gamepad Button B (Button 2): Activate Hatcher Pnuematics
+-Gamepad Right Bumper (Button 6): Extend Hatcher
+
+# Competition Changes
+
+Encoder:
+
+-Set Encoder Scale
+
+-Configure Lift Levels
+
+Limit Switches:
+
+-Configure Ports
+
+Complete System Checkup:
+
+-Drive Base
+
+-Lift
+
+-Climb
+
+-Intake
+
+-Cameras
+
+-Pixy?
